@@ -107,7 +107,7 @@ RUN conda install -q -y \
     fix-permissions $CONDA_DIR
     
 # Install additional modules
-RUN conda install -q -y pyarrow pydrive psycopg2 pymsql sqlalchemy && \
+RUN conda install -q -y pyarrow pydrive psycopg2 pymysql sqlalchemy && \
     conda clean -tipsy && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
