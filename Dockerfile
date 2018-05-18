@@ -14,6 +14,7 @@ ENV SPARK_OPTS --driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M -
 ENV JULIA_PKGDIR /opt/julia
 ENV JULIA_VERSION 0.6.2
 
+#Install Spark
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y openjdk-8-jre-headless ca-certificates-java && \
     apt-get clean && \
@@ -25,6 +26,7 @@ RUN cd /tmp && \
         rm spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 RUN cd /usr/local && ln -s spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark
 
+#Install Julia
 RUN mkdir /opt/julia-${JULIA_VERSION} && \
     cd /tmp && \
     wget -q https://julialang-s3.julialang.org/bin/linux/x64/`echo ${JULIA_VERSION} | cut -d. -f 1,2`/julia-${JULIA_VERSION}-linux-x86_64.tar.gz && \
@@ -41,31 +43,72 @@ RUN mkdir /etc/julia && \
 
 USER $NB_UID
 
-RUN conda upgrade conda numpy matplotlib pandas scipy
 RUN pip install -U pip
 
-# Install pyarrow
-RUN conda install --quiet -y 'pyarrow' && \
-    conda clean -tipsy && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
-
-# Install Julia
+# Install Julia Packages
 RUN julia -e 'Pkg.init()' && \
     julia -e 'Pkg.update()' && \
-    (test $TEST_ONLY_BUILD || julia -e 'Pkg.add("HDF5")') && \
+    julia -e 'Pkg.add("HDF5")' && \
     julia -e 'Pkg.add("Gadfly")' && \
     julia -e 'Pkg.add("RDatasets")' && \
     julia -e 'Pkg.add("IJulia")' && \
-    # Precompile Julia packages \
     julia -e 'using IJulia' && \
-    # move kernelspec out of home \
     mv $HOME/.local/share/jupyter/kernels/julia* $CONDA_DIR/share/jupyter/kernels/ && \
     chmod -R go+rx $CONDA_DIR/share/jupyter && \
     rm -rf $HOME/.local && \
     fix-permissions $JULIA_PKGDIR $CONDA_DIR/share/jupyter
 
-# Packages and Modules
+# Install jupyterlab gitub integration
 RUN jupyter labextension install @jupyterlab/github
 RUN pip install jupyterlab_github
+
+# Install/upgrade conda modules
+RUN conda upgrade -q -y conda numpy matplotlib pandas scipy && \
+    conda clean -tipsy && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+USER root
+
+# R pre-requisites
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    fonts-dejavu \
+    tzdata \
+    gfortran \
+    gcc && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+USER $NB_UID
+
+# R packages
+RUN conda install -q -y \
+    'rpy2=2.8*' \
+    'r-base=3.4.1' \
+    'r-irkernel=0.8*' \
+    'r-plyr=1.8*' \
+    'r-devtools=1.13*' \
+    'r-tidyverse=1.1*' \
+    'r-shiny=1.0*' \
+    'r-rmarkdown=1.8*' \
+    'r-forecast=8.2*' \
+    'r-rsqlite=2.0*' \
+    'r-reshape2=1.4*' \
+    'r-nycflights13=0.2*' \
+    'r-caret=6.0*' \
+    'r-rcurl=1.95*' \
+    'r-crayon=1.3*' \
+    'r-randomforest=4.6*' \
+    'r-htmltools=0.3*' \
+    'r-sparklyr=0.7*' \
+    'r-htmlwidgets=1.0*' \
+    'r-hexbin=1.27*' && \
+    conda clean -tipsy && \
+    fix-permissions $CONDA_DIR
+    
+# Install additional modules
+RUN conda install -q -y pyarrow pydrive psycopg2 pymsql sqlalchemy && \
+    conda clean -tipsy && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
 
