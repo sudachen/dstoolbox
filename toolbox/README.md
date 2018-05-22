@@ -14,6 +14,9 @@ nano docker-compose.yml
 docker-compose up --build -d
 ````
 
-The DS Toolbox will start automatically every time on Docker starting
+The DS Toolbox will start automatically every time on Docker starting.
+Jupyterlab is available on localhost:8888. This toolbox support google  Colaboratory. Notebooks on google drive can be opened on Colaboratory and calculated on local DS toolbox, simple connect it to local runtime.
+
+  
 
 
