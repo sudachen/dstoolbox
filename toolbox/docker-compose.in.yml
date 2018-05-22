@@ -8,5 +8,5 @@ services:
     volumes:
       - ${HOME}/work:/home/jupyter/work
     environment:
-      DATABASE_URL: postgresql+psycopg2://test:test@192.168.99.1/test
+      DATABASE_URL: sqlite://
       GITHUB_ACCESS_TOKEN: NONE
