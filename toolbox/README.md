@@ -10,7 +10,7 @@ git clone git@github.com:sudachen/dstoolbox.git
 cd dstoolbox/toolbox
 cp docker-compose.in.yml docker-compose.yml
 nano docker-compose.yml
-# setup envariment variables, save and exit editor
+# setup environment variables, save and exit editor
 docker-compose up --build -d
 ````
 
