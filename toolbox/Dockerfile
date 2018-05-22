@@ -1,4 +1,4 @@
-FROM sudachen/r_julia:latest
+FROM sudachen/r_julia_py2:latest
 
 # any additional content here
 
