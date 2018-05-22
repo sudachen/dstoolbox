@@ -1,4 +1,4 @@
-FROM sudachen/jupyter
+FROM sudachen/jupyter:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
 USER root

@@ -110,7 +110,7 @@ RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
     && fix-permissions ${HOME}
 
 # Import matplotlib the first time to build the font cache.
-ENV XDG_CACHE_HOME {HOME}/.cache/
+ENV XDG_CACHE_HOME ${HOME}/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" \
     && fix-permissions ${HOME}
 
@@ -139,10 +139,8 @@ RUN pip install --no-cache-dir jupyter_http_over_ws \
 USER root
 
 COPY jupyter_notebook_config.py /etc/jupyter/
-COPY load_ext.py $HOME/.ipython/profile_default/startup/load_ext.py
 RUN echo "jupyter ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/notebook \
-    && fix-permissions /etc/jupyter/ \
-    && fix-permissions ${HOME} 
+    && fix-permissions /etc/jupyter/
 
 EXPOSE 8888
 WORKDIR $HOME
@@ -151,6 +149,3 @@ CMD [ "jupyter", "lab" ]
 
 USER $NB_UID
 
-# postgresql+psycopg2://test:test@localhost/test
-ENV DATABASE_URL=sqlite:// \
-    GITHUB_ACCESS_TOKEN=NONE
