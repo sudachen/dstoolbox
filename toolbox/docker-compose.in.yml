@@ -10,3 +10,9 @@ services:
     environment:
       DATABASE_URL: sqlite://
       GITHUB_ACCESS_TOKEN: NONE
+
+#DATABSAE_URL
+# redshift/posrgtesql -> postgresql+psycopg2://username:password@host:5439/databasae
+# mysql -> mysql+pymysql://username:password@host:3306/database
+# inmemory sqlite -> sqlite://
+
