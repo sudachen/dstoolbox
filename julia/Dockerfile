@@ -40,16 +40,19 @@ RUN julia -e 'Pkg.init()' \
 
 USER root
 ADD REQUIRE $JULIA_PKGDIR/v0.6/REQUIRE
-RUN chown $NB_USER ${JULIA_PKGDIR}/v0.6/REQUIRE
+ADD precompile $JULIA_PKGDIR/v0.6/precompile
+RUN chown $NB_USER ${JULIA_PKGDIR}/v0.6/REQUIRE \
+    && chmod a+x ${JULIA_PKGDIR}/v0.6/precompile \
+    && chown $NB_USER ${JULIA_PKGDIR}/v0.6/precompile
 
 USER $NB_UID
 
 RUN julia -e 'Pkg.resolve()' \
-    && julia -e 'using IJulia' \
+    && ${JULIA_PKGDIR}/v0.6/precompile \
     && mv ${HOME}/.local/share/jupyter/kernels/julia* ${CONDA_DIR}/share/jupyter/kernels/ \
     && chmod -R go+rx ${CONDA_DIR}/share/jupyter \
     && rm -rf ${HOME}/.local \
+    && rm -rf ${JULIA_PKGDIR}/v0.6/.cache \
     && fix-permissions ${JULIA_PKGDIR} \ 
     && fix-permissions ${CONDA_DIR}/share/jupyter 
-
 
