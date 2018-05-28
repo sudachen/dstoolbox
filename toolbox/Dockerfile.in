@@ -21,8 +21,11 @@ RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@mast
 #USER root
 #RUN apt-get update --fix-missing \
 #    && apt-get install -qy --no-install-recommends \
+#        ip6tables iptables openvpn shadow \
 #    && rm -rf /var/lib/apt/lists/* 
-#USER $NB_USER
+#RUN addgroup -S vpn
+#ADD openvpn.sh /usr/bin/
+#ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/openvpn.sh"]
 
 #RUN pip install -U --no-cache-dir gr 
 
