@@ -6,7 +6,7 @@ Install Docker if it is not installed already.
 https://www.docker.com/community-edition 
 
 ```sh
-git clone git@github.com:sudachen/dstoolbox.git
+git clone https://github.com/sudachen/dstoolbox.git
 cd dstoolbox
 make up
 
