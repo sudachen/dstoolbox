@@ -1,0 +1,13 @@
+build:
+	docker build ${BUILD_ARGS} -t ${OWNER}/${IMAGE}:${REVISION} .
+	docker tag ${OWNER}/${IMAGE}:${REVISION} ${OWNER}/${IMAGE}:latest
+
+next:
+	echo "FROM ${OWNER}/${BASE_IMAGE}:${REVISION}" > Dockerfile.build
+	tail -n +2 Dockerfile >> Dockerfile.build
+	docker build ${BUILD_ARGS} -t ${OWNER}/${IMAGE}:${REVISION} -f Dockerfile.build .
+	docker tag ${OWNER}/${IMAGE}:${REVISION} ${OWNER}/${IMAGE}:latest
+
+push:
+	docker push ${OWNER}/${IMAGE}:${REVISION} 
+	docker push ${OWNER}/${IMAGE}:latest

@@ -1,4 +1,4 @@
-FROM sudachen/r_julia:latest
+FROM sudachen/jupyter:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
 RUN conda create -n python27 python=2.7 ipykernel \
@@ -7,9 +7,9 @@ RUN conda create -n python27 python=2.7 ipykernel \
     && fix-permissions ${HOME}
 
 RUN conda install -n python27 -c conda-forge \
-       'numpy=1.14.*' \
-       'pandas=0.23.*' \
-       'pandas=0.23.*' \
+       'blas=*=openblas' \
+       'numpy=1.13.*' \
+       'pandas=0.22.*' \
        'ipywidgets=7.2.*' \
        'matplotlib=2.2.*' \
        'sqlalchemy=1.2.*' \
@@ -23,5 +23,10 @@ RUN conda install -n python27 -c conda-forge \
     && fix-permissions ${HOME}
 
 RUN ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
+    && mv ${HOME}/.local/share/jupyter/kernels/python2 ${CONDA_DIR}/share/jupyter/kernels/ \
+    && chmod -R go+rx ${CONDA_DIR}/share/jupyter \
+    && rm -rf ${HOME}/.local \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
+
+ENV JUPYTER_HAS_PYTHON2=2.7

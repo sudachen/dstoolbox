@@ -1,0 +1,16 @@
+
+up: down
+	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > Dockerfile
+	tail -n +2 Dockerfile.in >> Dockerfile
+	if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
+	docker-compose up --build -d
+
+run: down
+	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > Dockerfile
+	tail -n +2 Dockerfile.in >> Dockerfile
+	if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
+	docker build -t ${OWNER}/${IMAGE}:RUN .
+	docker run -it -p 8888:8888 ${OWNER}/${IMAGE}:RUN
+
+down:
+	-docker-compose down
