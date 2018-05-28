@@ -7,19 +7,13 @@ all: up
 jupyter:
 	IMAGE=$@ $(MAKE) -C base -f $(PWD)/Makefile.docker build
 
-jupyter_r: jupyter
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C r -f $(PWD)/Makefile.docker next
-jupyter_2: jupyter
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker next
-jupyter_j: jupyter
+julia: jupyter
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C j -f $(PWD)/Makefile.docker next
 
-jupyter_r: jupyter
+jupyter_rj: julia
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C r -f $(PWD)/Makefile.docker next
-jupyter_r2: jupyter_r
+jupyter_r2j: jupyter_rj
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker next
-jupyter_r2j: jupyter_r2
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C j -f $(PWD)/Makefile.docker next
 jupyter_r2jx: jupyter_r2j
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C x -f $(PWD)/Makefile.docker next
 
@@ -33,6 +27,6 @@ jupyter_r2jx: jupyter_r2j
 
 build: $(DEFAULT)
 up: $(DEFAULT).Up
-push: jupyter_r2j.Push jupyter_r2jx.Push
+push: jupyter.Push julia.Push jupyter_r2jx.Push 
 down: 
 	$(MAKE) -C toolbox -f $(PWD)/Makefile.up down
