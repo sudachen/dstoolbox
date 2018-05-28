@@ -1,7 +1,7 @@
-export REVISION = 1.2
+export REVISION = 1.3
 export OWNER = sudachen
 
-DEFAULT = jupyter_jx2
+DEFAULT = jupyter_r2jx
 all: up
 
 jupyter:
@@ -13,12 +13,15 @@ jupyter_2: jupyter
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker next
 jupyter_j: jupyter
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C j -f $(PWD)/Makefile.docker next
-jupyter_jx: jupyter_j
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C x -f $(PWD)/Makefile.docker next
-jupyter_jx2: jupyter_jx
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker next
-jupyter_jx2r: jupyter_jx2
+
+jupyter_r: jupyter
 	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C r -f $(PWD)/Makefile.docker next
+jupyter_r2: jupyter_r
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker next
+jupyter_r2j: jupyter_r2
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C j -f $(PWD)/Makefile.docker next
+jupyter_r2jx: jupyter_r2j
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C x -f $(PWD)/Makefile.docker next
 
 %.Push: % 
 	docker push ${OWNER}/$(basename $@):${REVISION}
@@ -30,6 +33,6 @@ jupyter_jx2r: jupyter_jx2
 
 build: $(DEFAULT)
 up: $(DEFAULT).Up
-push: jupyter.Push jupyter_jx.Push jupyter_jx2.Push jupyter_jx2r.Push
+push: jupyter_r2j.Push jupyter_r2jx.Push
 down: 
 	$(MAKE) -C toolbox -f $(PWD)/Makefile.up down

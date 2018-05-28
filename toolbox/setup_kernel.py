@@ -1,6 +1,7 @@
 from IPython import get_ipython
 ip = get_ipython()
 
+ip.magic('automagic off')
 ip.magic('load_ext sql')
 ip.magic('load_ext autoreload')
 ip.magic('matplotlib inline')

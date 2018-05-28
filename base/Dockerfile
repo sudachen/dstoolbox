@@ -115,7 +115,7 @@ RUN conda install -y ipyleaflet opencv \
 
 RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
     && jupyter labextension install @jupyter-widgets/jupyterlab-manager@^0.35 \
-    && jupyter labextension install jupyterlab_bokeh@^0.5.0 \
+    && jupyter labextension install jupyterlab_bokeh \
     && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
     && rm -rf ${HOME}/.cache/yarn \
     && rm -rf ${HOME}/.node-gyp \
@@ -131,6 +131,15 @@ RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" \
 
 RUN pip install --no-cache-dir jupyter_http_over_ws \
     && jupyter serverextension enable --py jupyter_http_over_ws \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+RUN jupyter labextension install jupyterlab-drawio \
+    && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+    && rm -rf ${HOME}/.cache/yarn \
+    && rm -rf ${HOME}/.node-gyp \
+    && conda clean -tipsy \
+    && npm cache clean --force \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
 

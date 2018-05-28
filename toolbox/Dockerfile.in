@@ -1,11 +1,9 @@
-FROM sudachen/jupyter_jx:latest
+FROM sudachen/jupyter_r2j:latest
 
 #sudachen/jupyter:latest       - Python3 
-#sudachen/jupyter_j:latest     - Python3 and Julia
-#sudachen/jupyter_jx:latest    - Python3, Julia, beakerx[Scala,SQL]
-#sudachen/jupyter_jx2:latest    - Python3, Julia, beakerx[Scala,SQL], Python2
-#sudachen/jupyter_jx2r:latest    - Python3, Julia, beakerx[Scala,SQL], Python2, R
-#sudachen/jupyter_jx2r:latest    - Python3, Julia, beakerx[Scala,SQL], Python2, R, Go
+#sudachen/jupyter_r2:latest    - Python3, R, Python2
+#sudachen/jupyter_r2j:latest   - Python3, R, Python2, Julia
+#sudachen/jupyter_r2jx:latest  - Python3, R, Python2, Julia, Scala
 
 USER root
 ADD jupyter_notebook_config.py /etc/jupyter/
@@ -18,10 +16,7 @@ USER $NB_USER
 ENV DATABASE_URL=sqlite:// \
     GITHUB_ACCESS_TOKEN=NONE
 
-RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@master \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@master 
 
 #USER root
 #RUN apt-get update --fix-missing \
@@ -29,9 +24,6 @@ RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@mast
 #    && rm -rf /var/lib/apt/lists/* 
 #USER $NB_USER
 
-#RUN pip install -U --no-cache-dir gr \
-#    && conda clean -tipsy \
-#    && fix-permissions ${CONDA_DIR} \
-#    && fix-permissions ${HOME}
+#RUN pip install -U --no-cache-dir gr 
 
 
