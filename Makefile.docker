@@ -8,8 +8,8 @@ $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}:
 			echo "FROM ${OWNER}/${BASE_IMAGE}:${REVISION}" > Dockerfile.build; \
 			tail -n +2 Dockerfile >> Dockerfile.build; \
 		fi 
-	docker build ${BUILD_ARGS} -t ${OWNER}/${IMAGE}:${REVISION} -f Dockerfile.build .
-	touch $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}
+	docker build ${BUILD_ARGS} -t ${OWNER}/${IMAGE}:${REVISION} -f Dockerfile.build . \
+		&& touch $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}
 
 build: 
 	mkdir -p ${TAGS_DIR}

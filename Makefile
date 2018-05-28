@@ -1,7 +1,7 @@
 export REVISION = 1.3
 export OWNER = sudachen
 
-DEFAULT = jupyter_r2jx
+DEFAULT = jupyter_r2j
 all: up
 
 jupyter:
