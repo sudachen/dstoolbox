@@ -20,7 +20,7 @@ jupyter_r2jx: jupyter_r2j
 %.Push: % 
 	docker push ${OWNER}/$(basename $@):${REVISION}
 	docker push ${OWNER}/$(basename $@):latest
-%.Up: %
+%.Up:
 	$(MAKE) IMAGE=$(basename $@) -C toolbox -f $(PWD)/Makefile.up up	
 %.Run: 
 	$(MAKE) IMAGE=$(basename $@) -C toolbox -f $(PWD)/Makefile.up run	

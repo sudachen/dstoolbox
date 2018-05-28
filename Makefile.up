@@ -1,5 +1,6 @@
 
 up: down
+	if [ ! -f docker-compose.yml ]; then cp docker-compose.in.yml docker-compose.yml; fi
 	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > Dockerfile
 	tail -n +2 Dockerfile.in >> Dockerfile
 	if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
