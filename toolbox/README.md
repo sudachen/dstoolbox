@@ -7,11 +7,15 @@ https://www.docker.com/community-edition
 
 ```sh
 git clone git@github.com:sudachen/dstoolbox.git
+make up
+
+# optional, edit evironment variables 
+# DATABASE_URL and GITHUB_ACCESS_TOKEN
 cd dstoolbox/toolbox
-cp docker-compose.in.yml docker-compose.yml
 nano docker-compose.yml
-# setup environment variables, save and exit editor
-docker-compose up --build -d
+# setup environment variables as you wish, save and exit editor
+cd ..
+make up
 ````
 
 The DS Toolbox will start automatically every time on Docker starting.
