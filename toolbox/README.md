@@ -22,6 +22,8 @@ make up
 The DS Toolbox will start automatically every time on Docker starting.
 Jupyterlab is available on localhost:8888. This toolbox supports google  Colaboratory. Notebooks on google drive can be opened by Colaboratory and calculated on local DS toolbox, simple connect to a local runtime.
 
+All locally created notebooks will be in 'work' directory in user home. 
+
 
 
 
