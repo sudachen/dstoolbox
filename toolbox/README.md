@@ -7,11 +7,12 @@ https://www.docker.com/community-edition
 
 ```sh
 git clone git@github.com:sudachen/dstoolbox.git
+cd dstoolbox
 make up
 
 # optional, edit evironment variables 
 # DATABASE_URL and GITHUB_ACCESS_TOKEN
-cd dstoolbox/toolbox
+cd toolbox
 nano docker-compose.yml
 # setup environment variables as you wish, save and exit editor
 cd ..
