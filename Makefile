@@ -8,17 +8,18 @@ jupyter:
 	IMAGE=$@ $(MAKE) -C base -f $(PWD)/Makefile.docker build
 
 julia: jupyter
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C j -f $(PWD)/Makefile.docker next
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C j -f $(PWD)/Makefile.docker build
 
 jupyter_rj: julia
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C r -f $(PWD)/Makefile.docker next
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C r -f $(PWD)/Makefile.docker build
 jupyter_r2j: jupyter_rj
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker next
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C 2 -f $(PWD)/Makefile.docker build
 jupyter_r2jx: jupyter_r2j
-	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C x -f $(PWD)/Makefile.docker next
+	IMAGE=$@ BASE_IMAGE=$< $(MAKE) -C x -f $(PWD)/Makefile.docker build
 
 %.Push: % 
 	docker push ${OWNER}/$(basename $@):${REVISION}
+	docker tag ${OWNER}/$(basename $@):${REVISION} ${OWNER}/$(basename $@):latest
 	docker push ${OWNER}/$(basename $@):latest
 %.Up:
 	$(MAKE) IMAGE=$(basename $@) -C toolbox -f $(PWD)/Makefile.up up	

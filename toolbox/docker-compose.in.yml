@@ -11,8 +11,8 @@ services:
       DATABASE_URL: sqlite://
       GITHUB_ACCESS_TOKEN: NONE
 
-#DATABSAE_URL
-# redshift/posrgtesql -> postgresql+psycopg2://username:password@host:5439/databasae
-# mysql -> mysql+pymysql://username:password@host:3306/database
-# inmemory sqlite -> sqlite://
+# Default connection for %%sql magic
+# redshift   -> DATABASE_URL: postgresql+psycopg2://username:password@host:5439/databasae
+# mysql      -> DATABASE_URL: mysql+pymysql://username:password@host:3306/database
+# mem/sqlite -> DATABASE_URL: sqlite://
 
