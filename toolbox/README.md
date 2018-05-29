@@ -5,7 +5,7 @@ To start DS Toolbox do following:
 Firstly, install Docker if it is not installed already.
 https://www.docker.com/community-edition   
 On Windows I use and recomend to use legacy `Docker Toolbox` https://docs.docker.com/toolbox/toolbox_install_windows/   
-It uses VirtualBox and does not prevent prohibit the use of another VM software except microsoft Hyper-V. 
+It uses VirtualBox and does not prohibit the use of another VM software except microsoft Hyper-V. 
 
 Than, download and runs setup script. If you are a Windows user, execute it in `Docker Quickstart Terminal`!
 ```sh
