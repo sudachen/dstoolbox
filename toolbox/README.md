@@ -7,7 +7,7 @@ https://www.docker.com/community-edition
 On Windows I use and recomend to use legacy `Docker Toolbox` https://docs.docker.com/toolbox/toolbox_install_windows/   
 It uses VirtualBox and does not prohibit the use of another VM software except microsoft Hyper-V. 
 
-Than, download and runs setup script. If you are a Windows user, execute it in `Docker Quickstart Terminal`!
+Than, download and runs setup script. If you are a Windows user, execute it in the `Docker Quickstart Terminal`!
 ```sh
 curl -s https://raw.githubusercontent.com/sudachen/dstoolbox/master/dstoolbox-setup.sh | sh
 ```
