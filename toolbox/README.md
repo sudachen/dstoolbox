@@ -5,7 +5,7 @@ To start DS Toolbox do following:
 Firstly, install Docker if it is not installed already.
 https://www.docker.com/community-edition 
 
-Than, download and runs setup script. I you are a Windows user, execute it in `Docker Quickstart Terminal`!
+Than, download and runs setup script. If you are a Windows user, execute it in `Docker Quickstart Terminal`!
 ```sh
 curl -s https://raw.githubusercontent.com/sudachen/dstoolbox/master/dstoolbox-setup.sh | sh
 ```
