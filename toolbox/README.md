@@ -1,21 +1,32 @@
 # DS Toolbox Service
 
-To start DS Toolbox do following
+To start DS Toolbox do following:
 
-Install Docker if it is not installed already.
+Firstly, install Docker if it is not installed already.
 https://www.docker.com/community-edition 
+
+Than, download and runs setup script.
+```sh
+curl -q dstoolbox-setup.sh | sh
+```
+
+Or, if you familiar with Git, you can play with repo
 
 ```sh
 git clone https://github.com/sudachen/dstoolbox.git
 cd dstoolbox
 make up
+```
 
+It's quite ALL, however you can configure more
+
+```sh
 # optional, edit evironment variables 
 # DATABASE_URL and GITHUB_ACCESS_TOKEN
 # or/and add other environment valiables
 nano ~/.dstoolbox/docker-compose.yml
 # after changes you have to rebuild jupyter service
-make up
+sh ~/.dstoolbox/up
 ````
 
 The DS Toolbox will start automatically every time on Docker starting.
@@ -23,6 +34,4 @@ Jupyterlab is available on localhost:8888. This toolbox supports google  Colabo
 
 All locally created notebooks will be in 'work' directory in user home. 
 
-
-
-
+If you use legacy docker toolbox, do change IP in port bindings declared in ~/.dstoolbox/docker-compose.yml from 127.0.0.1 to 0.0.0.0. And, of course, add required port mapping in default VM by VirtualBox.
