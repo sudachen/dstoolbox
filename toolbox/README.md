@@ -13,10 +13,8 @@ make up
 # optional, edit evironment variables 
 # DATABASE_URL and GITHUB_ACCESS_TOKEN
 # or/and add other environment valiables
-cd toolbox
-nano docker-compose.yml
-# setup environment variables as you wish, save and exit editor
-cd ..
+nano ~/.dstoolbox/docker-compose.yml
+# after changes you have to rebuild jupyter service
 make up
 ````
 
