@@ -1,0 +1,8 @@
+#!sh
+CONFIG_DIR=${HOME}/.dstoolbox
+
+cd ${CONFIG_DIR}
+cat Dockerfile.in > Dockerfile
+if [ -f Deckerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
+docker-compose down
+docker-compose up --build -d

@@ -1,0 +1,5 @@
+#!/bin/sh
+CONFIG_DIR=${HOME}/.dstoolbox
+
+cd ${CONFIG_DIR}
+docker-compose down
