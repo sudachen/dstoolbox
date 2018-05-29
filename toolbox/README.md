@@ -7,7 +7,7 @@ https://www.docker.com/community-edition
 
 Than, download and runs setup script.
 ```sh
-curl -q https://raw.githubusercontent.com/sudachen/dstoolbox/master/dstoolbox-setup.sh | sh
+curl -s https://raw.githubusercontent.com/sudachen/dstoolbox/master/dstoolbox-setup.sh | sh
 ```
 
 Or, if you familiar with Git, you can play with repo
