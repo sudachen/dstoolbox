@@ -1,16 +1,25 @@
 
-up: down
-	if [ ! -f docker-compose.yml ]; then cp docker-compose.in.yml docker-compose.yml; fi
-	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > Dockerfile
-	tail -n +2 Dockerfile.in >> Dockerfile
-	if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
-	docker-compose up --build -d
+CONFIG_DIR=${HOME}/.dstoolbox
+DSTOOLBOX_YAML=${CONFIG_DIR}/docker-compose.yml
+DSTOOLBOX_DOCKERFILE=${CONFIG_DIR}/Dockerfile
+DSTOOLBOX_DOCKERUSER=${CONFIG_DIR}/Dockerfile.user
+DSTOOLBOX_NBCONFIG=${CONFIG_DIR}/jupyter_notebook_config.py
+DSTOOLBOX_KSETUP=${CONFIG_DIR}/setup_kernel.py
 
-run: down
-	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > Dockerfile
-	tail -n +2 Dockerfile.in >> Dockerfile
-	if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
-	docker build -t ${OWNER}/${IMAGE}:RUN .
+config:
+	if [ ! -d ${CONFIG_DIR} ]; then mkdir -p ${CONFIG_DIR}; fi
+	if [ ! -f ${DSTOOLBOX_YAML} ]; then cp docker-compose.in.yml ${DSTOOLBOX_YAML}; fi
+	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" >  ${DSTOOLBOX_DOCKERFILE}
+	tail -n +2 Dockerfile.in >> ${DSTOOLBOX_DOCKERFILE}
+	if [ -f ${DSTOOLBOX_DOCKERUSER} ]; then cat ${DSTOOLBOX_DOCKERUSER} >> ${DSTOOLBOX_DOCKERFILE}; fi
+	if [ ! -f ${DSTOOLBOX_NBCONFIG} ]; then cp jupyter_notebook_config.py ${DSTOOLBOX_NBCONFIG}; fi
+	if [ ! -f ${DSTOOLBOX_KSETUP} ]; then cp setup_kernel.py ${DSTOOLBOX_KSETUP}; fi
+
+up: config down
+	cd ${CONFIG_DIR}; docker-compose up --build -d 
+
+run: config down
+	docker build -t ${OWNER}/${IMAGE}:RUN ${CONFIG_DIR}
 	docker run -it -p 8888:8888 ${OWNER}/${IMAGE}:RUN
 
 down:

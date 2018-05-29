@@ -1,5 +1,40 @@
-FROM sudachen/jupyter:latest
+FROM sudachen/julia:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
+
+RUN sudo apt-get update --fix-missing \
+    && sudo apt-get install -qy --no-install-recommends \
+	build-essential \
+	gfortran \
+    && sudo rm -rf /var/lib/apt/lists/* 
+
+RUN conda install -y \
+    'rpy2' \
+    'r-base=3.4*' \
+    'r-irkernel' \
+    'r-plyr' \
+    'r-devtools' \
+    'r-tidyverse' \
+    'r-shiny' \
+    'r-rmarkdown' \
+    'r-forecast' \
+    'r-rsqlite' \
+    'r-rpostgresql' \
+    'r-rmysql' \
+    'r-reshape2' \
+    'r-nycflights13' \
+    'r-caret' \
+    'r-rcurl' \
+    'r-crayon' \
+    'r-randomforest' \
+    'r-htmltools' \
+    'r-sparklyr' \
+    'r-htmlwidgets' \
+    'r-hexbin' \
+    && conda clean -tipsy \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+ENV JUPYTER_HAS_R=3.4
 
 RUN conda create -n python27 python=2.7 ipykernel \
     && conda clean -tipsy \
@@ -17,7 +52,7 @@ RUN conda install -n python27 -c conda-forge \
        'libpq=9.6.*' \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
-    && conda remove -n python27 -q -y --force qt pyqt \
+    && conda remove -n python27 -y --force qt pyqt \
     && conda clean -tipsy \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}

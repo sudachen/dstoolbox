@@ -1,5 +1,5 @@
 
-TAGS_DIR=../tags
+TAGS_DIR=../.tags
 
 $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}:
 	if [ -z "${BASE_IMAGE}" ]; \

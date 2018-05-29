@@ -1,9 +1,8 @@
-FROM sudachen/jupyter_r2j:latest
+FROM sudachen/jupyter:latest
 
 #sudachen/jupyter:latest       - Python3 
-#sudachen/jupyter_r2:latest    - Python3, R, Python2
-#sudachen/jupyter_r2j:latest   - Python3, R, Python2, Julia
-#sudachen/jupyter_r2jx:latest  - Python3, R, Python2, Julia, Scala
+#sudachen/julia:latest         - Python3 and Julia
+#sudachen/jupy2r:latest        - Python3, Julia, Python2, R
 
 USER root
 ADD jupyter_notebook_config.py /etc/jupyter/
@@ -18,6 +17,12 @@ ENV DATABASE_URL=sqlite:// \
 
 RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@master 
 
+#RUN pip install -U --no-cache-dir gr 
+
+# *****
+# to setup VPN autoconnect 
+#  copy following into Dockerfile.user
+# -----
 #USER root
 #RUN apt-get update --fix-missing \
 #    && apt-get install -qy --no-install-recommends \
@@ -26,7 +31,5 @@ RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@mast
 #RUN addgroup -S vpn
 #ADD openvpn.sh /usr/bin/
 #ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/openvpn.sh"]
-
-#RUN pip install -U --no-cache-dir gr 
-
+# ----
 
