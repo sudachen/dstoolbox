@@ -9,7 +9,7 @@ DSTOOLBOX_KSETUP=${CONFIG_DIR}/setup_kernel.py
 config:
 	if [ ! -d ${CONFIG_DIR} ]; then mkdir -p ${CONFIG_DIR}; fi
 	if [ ! -f ${DSTOOLBOX_YAML} ]; then cp docker-compose.in.yml ${DSTOOLBOX_YAML}; fi
-	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" >  ${DSTOOLBOX_DOCKERFILE}
+	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > ${DSTOOLBOX_DOCKERFILE}
 	tail -n +2 Dockerfile.in >> ${DSTOOLBOX_DOCKERFILE}
 	if [ -f ${DSTOOLBOX_DOCKERUSER} ]; then cat ${DSTOOLBOX_DOCKERUSER} >> ${DSTOOLBOX_DOCKERFILE}; fi
 	if [ ! -f ${DSTOOLBOX_NBCONFIG} ]; then cp jupyter_notebook_config.py ${DSTOOLBOX_NBCONFIG}; fi

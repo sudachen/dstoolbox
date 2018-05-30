@@ -11,4 +11,20 @@ ip.run_cell('import matplotlib.pyplot as plt')
 ip.run_cell('import numpy as np')
 ip.run_cell('import pandas as pd')
 
+ip.run_cell('''
+from singleton_decorator import singleton
 
+@singleton
+def GDrive():
+    from pydrive.auth import GoogleAuth
+    from pydrive.drive import GoogleDrive
+    from google.colab import auth
+    from oauth2client.client import GoogleCredentials
+
+    # 1. Authenticate and create the PyDrive client.
+    auth.authenticate_user()
+    gauth = GoogleAuth()
+    gauth.credentials = GoogleCredentials.get_application_default()
+    return GoogleDrive(gauth)
+
+''')

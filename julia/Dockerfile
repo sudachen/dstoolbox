@@ -51,10 +51,32 @@ RUN julia -e 'Pkg.resolve()' \
     && ${JULIA_PKGDIR}/v0.6/precompile \	
     && mv ${HOME}/.local/share/jupyter/kernels/julia* ${CONDA_DIR}/share/jupyter/kernels/ \
     && chmod -R go+rx ${CONDA_DIR}/share/jupyter \
-    && rm -rf ${HOME}/.local \
+    && rm -rf ${JULIA_PKGDIR}/v0.6/.cache \
+    && fix-permissions ${JULIA_PKGDIR} \ 
+    && fix-permissions ${CONDA_DIR}/share/jupyter 
+
+RUN sudo ln -fs ${CONDA_DIR}/share/jupyter /usr/local/share/jupyter \
+    && julia -e 'Pkg.add("Interact")' \
+    && julia -e 'using Interact' \
+    && sudo rm /usr/local/share/jupyter \
+    && rm -rf ${JULIA_PKGDIR}/v0.6/.cache \
+    && fix-permissions ${JULIA_PKGDIR} \ 
+    && fix-permissions ${CONDA_DIR}/share/jupyter 
+
+RUN sudo apt-get update --fix-missing \
+    && sudo apt-get install -qy --no-install-recommends \
+	imagemagick \
+    && sudo rm -rf /var/lib/apt/lists/* \
+    && julia -e 'Pkg.add("FFTW")' \
+    && julia -e 'Pkg.add("ImageMagick")' \
+    && julia -e 'using ImageMagick' \
     && rm -rf ${JULIA_PKGDIR}/v0.6/.cache \
     && fix-permissions ${JULIA_PKGDIR} \ 
     && fix-permissions ${CONDA_DIR}/share/jupyter 
 
 ENV JUPYTER_HAS_JULIA=${JULIA_VERSION}
 
+RUN pip install --no-cache-dir \
+	Wand \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}

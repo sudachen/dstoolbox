@@ -16,4 +16,17 @@ Conda 0.7.1
 IJulia 1.8.0
 HDF5 0.9.2
 RDatasets 0.3.0
+PyCall 1.16.1
+JLD 0.8.3
+StatsBase 0.22.0
+StatsModels 0.2.5
+StatsFuns 0.6.0
+TimeSeries 0.11.1
+MLBase 0.7.0
+GLM 0.11.0
+Reactive 0.6.0
+Mocha 0.3.1
+TextAnalysis 0.3.0
+
+
 
