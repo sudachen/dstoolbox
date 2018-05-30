@@ -13,6 +13,7 @@ GITHUB_TOOLBOX=https://raw.githubusercontent.com/sudachen/dstoolbox/master/toolb
 if [ -f ${CONFIG_DIR}/.version ]; then
   if [ $(cat ${CONFIG_DIR}/.version) != ${VERSION} ]; then
     echo "updating at ${CONFIG_DIR} ..."
+    cd ${CONFIG_DIR} && \
     curl -s ${GITHUB_TOOLBOX}/Dockerfile.in -o Dockerfile.in && \
     curl -s ${GITHUB_TOOLBOX}/jupyter_notebook_config.py -o jupyter_notebook_config.py && \
     curl -s ${GITHUB_TOOLBOX}/setup_kernel.py -o setup_kernel.py && \
