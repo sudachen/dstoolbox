@@ -7,7 +7,7 @@ https://www.docker.com/community-edition
 On Windows I use and recomend to use legacy `Docker Toolbox` https://docs.docker.com/toolbox/toolbox_install_windows/   
 It uses VirtualBox and does not prohibit the use of another VM software except microsoft Hyper-V. 
 
-Than, download and runs setup script. If you are a Windows user, execute it in the `Docker Quickstart Terminal`!
+Then run the setup script. If you are a Windows user, execute it in the `Docker Quickstart Terminal`!
 ```sh
 curl -s https://raw.githubusercontent.com/sudachen/dstoolbox/master/dstoolbox-setup.sh | sh
 ```
@@ -31,7 +31,7 @@ nano ~/.dstoolbox/docker-compose.yml
 sh ~/.dstoolbox/up
 ````
 
-The DS Toolbox will start automatically with Docker when Docker is starting. You have not start DS Toolbox every time, just start Docker or enble Docker to start automatically at system boot time.
+The DS Toolbox will start automatically with Docker when Docker is starting. You have not to start DS Toolbox every time, just start Docker or enable Docker to start automatically at system boot time.
 
 Jupyterlab is available on localhost:8888. This toolbox supports google  Colaboratory. Notebooks on google drive can be opened by Colaboratory and calculated on local DS toolbox, just connect it to the local runtime on 8888 port.
 
