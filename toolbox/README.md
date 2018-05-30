@@ -38,3 +38,5 @@ Jupyterlab is available on localhost:8888. This toolbox supports google  Colabo
 All locally created notebooks will be in 'work' directory in user home. 
 
 If you use legacy `Docker Toolbox`, you have to change IP in port bindings declared in ~/.dstoolbox/docker-compose.yml from 127.0.0.1 to 0.0.0.0. And, of course, do not forget to add required port mapping in default VM by VirtualBox.
+
+![](https://github.com/sudachen/dstoolbox/raw/master/docs/assets/virtualbox_ports.png)
