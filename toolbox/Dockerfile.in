@@ -4,17 +4,13 @@ FROM sudachen/jupy2r:latest
 #sudachen/julia:latest         - Python3 and Julia
 #sudachen/jupy2r:latest        - Python3, Julia, Python2, R
 
-ENV DATABASE_URL=sqlite:// \
-    GITHUB_ACCESS_TOKEN=NONE
-
-RUN pip install -U --no-cache-dir git+git://github.com/sudachen/ipython-sql@master 
-RUN pip install --no-cache-dir singleton_decorator
-RUN pip install -U --no-cache-dir git+git://github.com/sudachen/PyDrive
-
-#RUN pip install -U --no-cache-dir gr 
+RUN pip install -U --no-cache-dir \
+	git+git://github.com/sudachen/ipython-sql@master \
+	singleton_decorator \
+	git+git://github.com/sudachen/PyDrive
 
 USER root
-ADD jupyter_notebook_config.py /etc/jupyter/
+ADD jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py
 ADD setup_kernel.py $HOME/.ipython/profile_default/startup/setup_kernel.py
 RUN fix-permissions /etc/jupyter/ \
     && fix-permissions ${HOME}/.ipython 
