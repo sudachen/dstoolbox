@@ -10,6 +10,8 @@ DSTOOLBOX_NBCONFIG=${CONFIG_DIR}/jupyter_notebook_config.py
 DSTOOLBOX_KSETUP=${CONFIG_DIR}/setup_kernel.py
 GITHUB_TOOLBOX=https://raw.githubusercontent.com/sudachen/dstoolbox/master/toolbox/
 
+docker pull sudachen/jupy2r:latest
+
 if [ -f ${CONFIG_DIR}/.version ]; then
   if [ $(cat ${CONFIG_DIR}/.version) != ${VERSION} ]; then
     echo "updating at ${CONFIG_DIR} ..."
