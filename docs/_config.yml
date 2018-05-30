@@ -1,0 +1,29 @@
+
+theme: jekyll-theme-slate
+title: Data Science Toolbox
+google_analytics: UA-99577378-1
+repository: sudachen/dstoolbox
+excerpt_separator: <!--more-->
+baseurl: /dstoolbox
+comments: true
+github:
+  repository_url: https://github.com/sudachen/dstoolbox
+relative_links:
+  enabled:     true
+  collections: false
+kramdown:
+  syntax_highlighter_opts:
+    #line_numbers: true # bad idea, spans don't need linenos and would inherit this option
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
+gems:
+  - jekyll-feed
+  - jekyll-theme-slate
+exclude:
+  - Gemfile
+  - Gemfile.lock
+
+
