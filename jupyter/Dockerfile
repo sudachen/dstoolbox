@@ -39,6 +39,7 @@ ENV CONDA_VERSION=4.5.1 \
 
 ADD fix-permissions /usr/local/bin/fix-permissions
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone \
+    && chmod a+x /usr/local/bin/fix-permissions \
     && useradd -m -s ${SHELL} -N -u ${NB_UID} ${NB_USER} \
     && mkdir -p ${CONDA_DIR} \
     && chown ${NB_USER}:${NB_GID} ${CONDA_DIR} \
