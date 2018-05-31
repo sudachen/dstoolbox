@@ -12,6 +12,7 @@ RUN apt-get update --fix-missing \
 	sqlite3 \
 	libsqlite3-dev \
 	imagemagick \
+        libxml2-dev \
     && rm -rf /var/lib/apt/lists/* 
 
 USER $NB_UID
@@ -31,7 +32,7 @@ RUN mkdir /opt/julia-${JULIA_VERSION} \
     && rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz \
     && ln -fs /opt/julia-*/bin/julia /usr/local/bin/julia \
     && mkdir /etc/julia \
-    && echo "push!(Libdl.DL_LOAD_PATH, \"${CONDA_DIR}/lib\")" >> /etc/julia/juliarc.jl \
+    && echo "push!(Libdl.DL_LOAD_PATH, \"${CONDA_JL_HOME}/lib\")" >> /etc/julia/juliarc.jl \
     && mkdir ${JULIA_PKGDIR} \
     && chown $NB_USER ${JULIA_PKGDIR} \
     && fix-permissions ${JULIA_PKGDIR}
