@@ -1,77 +1,7 @@
 FROM sudachen/julia:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
-RUN sudo apt-get update --fix-missing \
-    && sudo apt-get install -qy --no-install-recommends \
-	build-essential \
-	gfortran \
-    && sudo rm -rf /var/lib/apt/lists/* 
-
-RUN conda install -y \
-    'rpy2' \
-    'r-base=3.4*' \
-    'r-irkernel' \
-    'r-plyr' \
-    'r-devtools' \
-    'r-tidyverse' \
-    'r-shiny' \
-    'r-rmarkdown' \
-    'r-forecast' \
-    'r-rsqlite' \
-    'r-rpostgresql' \
-    'r-rmysql' \
-    'r-reshape2' \
-    'r-nycflights13' \
-    'r-caret' \
-    'r-rcurl' \
-    'r-crayon' \
-    'r-randomforest' \
-    'r-htmltools' \
-    'r-sparklyr' \
-    'r-htmlwidgets' \
-    'r-hexbin' \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-ENV JUPYTER_HAS_R=3.4
-
-RUN julia -e 'Pkg.add("RCall")' \
-    && julia -e 'using RCall' \
-    && rm -rf ${JULIA_PKGDIR}/v0.6/.cache \
-    && fix-permissions ${JULIA_PKGDIR} 
-
-RUN conda create -n python27 python=2.7 ipykernel \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-RUN conda install -n python27 -c conda-forge \
-       'blas=*=openblas' \
-       'numpy=1.13.*' \
-       'pandas=0.22.*' \
-       'ipywidgets=7.2.*' \
-       'matplotlib=2.2.*' \
-       'sqlalchemy=1.2.*' \
-       'ipython-sql=0.3.*' \
-       'libpq=9.6.*' \
-       'psycopg2=2.7.*' \
-       'pymysql=0.8.*' \
-    && conda remove -n python27 -y --force qt pyqt \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-RUN ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
-    && mv ${HOME}/.local/share/jupyter/kernels/python2 ${CONDA_DIR}/share/jupyter/kernels/ \
-    && chmod -R go+rx ${CONDA_DIR}/share/jupyter \
-    && rm -rf ${HOME}/.local \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-ENV JUPYTER_HAS_PYTHON2=2.7
-
-# google drive integration
+# Google Drive
 
 ENV GCLOUD_DIR /opt/google_cloud
 
@@ -97,4 +27,37 @@ ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     CLOUDSDK_PYTHON=$CONDA_DIR/envs/python27/bin/python2 \
     PATH=$PATH:$GCLOUD_DIR/bin \
     DATALAB_ROOT=$HOME 
+
+# GitHub
+
+RUN jupyter labextension install @jupyterlab/github \
+    && pip install --no-cache-dir jupyterlab_github \
+    && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+    && rm -rf ${HOME}/.cache/yarn \
+    && rm -rf ${HOME}/.node-gyp \
+    && conda clean -tipsy \
+    && npm cache clean --force \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+# DrawIO
+
+RUN jupyter labextension install jupyterlab-drawio \
+    && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+    && rm -rf ${HOME}/.cache/yarn \
+    && rm -rf ${HOME}/.node-gyp \
+    && conda clean -tipsy \
+    && npm cache clean --force \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+# Hacked
+
+RUN pip install -U --no-cache-dir \
+	singleton_decorator \
+	git+git://github.com/sudachen/ipython-sql@master \
+	git+git://github.com/sudachen/PyDrive \
+    && conda clean -tipsy \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
 

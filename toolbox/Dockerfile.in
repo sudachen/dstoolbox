@@ -1,13 +1,8 @@
 FROM sudachen/jupy2r:latest
 
-#sudachen/jupyter:latest       - Python3 
-#sudachen/julia:latest         - Python3 and Julia
-#sudachen/jupy2r:latest        - Python3, Julia, Python2, R
-
-RUN pip install -U --no-cache-dir \
-	git+git://github.com/sudachen/ipython-sql@master \
-	singleton_decorator \
-	git+git://github.com/sudachen/PyDrive
+#sudachen/jupyter:latest       - Python3, Python2, R 
+#sudachen/julia:latest         - jupyter + Julia
+#sudachen/jupy2r:latest        - julia + GDrive, DrawIO, ...
 
 USER root
 ADD jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py
@@ -15,3 +10,4 @@ ADD setup_kernel.py $HOME/.ipython/profile_default/startup/setup_kernel.py
 RUN fix-permissions /etc/jupyter/ \
     && fix-permissions ${HOME}/.ipython 
 USER $NB_USER
+

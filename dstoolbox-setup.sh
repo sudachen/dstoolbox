@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=1.6
+VERSION=1.7
 IMAGE=sudachen/jupy2r:latest
 
 CONFIG_DIR=${HOME}/.dstoolbox
