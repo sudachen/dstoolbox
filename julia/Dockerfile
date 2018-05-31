@@ -5,14 +5,14 @@ USER root
 
 RUN apt-get update --fix-missing \
     && apt-get install -qy --no-install-recommends \
-	libpq5 \
-        libpq-dev \
-        hdf5-tools \
-        libhdf5-dev \
-	sqlite3 \
-	libsqlite3-dev \
-	imagemagick \
-        libxml2-dev \
+    libpq5 \
+    libpq-dev \
+    hdf5-tools \
+    libhdf5-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    imagemagick \
+    libxml2-dev \
     && rm -rf /var/lib/apt/lists/* 
 
 USER $NB_UID

@@ -57,6 +57,7 @@ RUN pip install -U --no-cache-dir \
 	singleton_decorator \
 	git+git://github.com/sudachen/ipython-sql@master \
 	git+git://github.com/sudachen/PyDrive \
+    !pip install git+git://github.com/sudachen/gspread.git \
     && conda clean -tipsy \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}

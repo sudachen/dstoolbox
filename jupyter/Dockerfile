@@ -66,6 +66,7 @@ RUN mkdir ${HOME}/work \
     && fix-permissions ${HOME}
 
 RUN conda install -y \
+       'python=3.6.3' \
        'blas=*=openblas' \
        'numpy=1.13.*' \
        'notebook=5.5.*' \
@@ -75,7 +76,11 @@ RUN conda install -y \
        'cython=0.28*' \
        'pandas=0.22*' \
        'matplotlib=2.2*' \
-    && conda install -y \
+    && conda clean -tipsy \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+RUN conda install -y \
        'scipy=1.1*' \
        'scikit-learn=0.19*' \
        'seaborn=0.8*' \
@@ -84,7 +89,11 @@ RUN conda install -y \
        'statsmodels=0.8*' \
        'sqlalchemy=1.2*' \
        'ipython-sql=0.3.*' \
-    && conda install -y \
+    && conda clean -tipsy \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+RUN conda install -y \
        'cloudpickle=0.5*' \
        'dill=0.2*' \
        'hdf5=1.10*' \
@@ -96,7 +105,6 @@ RUN conda install -y \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
        'pyarrow=0.9.*' \
-    && conda remove -y --force qt pyqt \
     && conda clean -tipsy \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
@@ -108,7 +116,6 @@ RUN conda install -y xlrd nodejs keras \
     && fix-permissions ${HOME}
 
 RUN conda install -y ipyleaflet opencv \
-    && conda remove -y --force qt pyqt \
     && conda clean -tipsy \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
@@ -147,7 +154,7 @@ RUN apt-get update --fix-missing \
 USER $NB_USER
 
 RUN conda install -y \
-    'rpy2' \
+    'rpy2=2.8*' \
     'r-base=3.4*' \
     'r-irkernel' \
     'r-plyr' \
@@ -193,7 +200,6 @@ RUN conda install -n python27 -c conda-forge \
        'libpq=9.6.*' \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
-    && conda remove -n python27 -y --force qt pyqt \
     && conda clean -tipsy \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
