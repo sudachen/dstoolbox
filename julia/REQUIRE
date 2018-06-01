@@ -17,10 +17,7 @@ Plots 0.17.1
 HDF5 0.9.2
 SimpleTraits 0.6.0
 Reactive 0.6.0
-EzXML 0.6.3
 ParserCombinator 1.7.11
 JLD 0.8.3
-LightGraphs 0.12.0
-GraphIO 0.2.0
 
 
