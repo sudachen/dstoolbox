@@ -19,9 +19,29 @@ RUN apt-get update --fix-missing \
 	fonts-dejavu \
 	fonts-liberation \
 	procps \
+        \
+	build-essential \
+	gfortran \
+	gcc \
+        g++ \
+        \
+    	libpq5 \
+	libpq-dev \
+        hdf5-tools \
+        libhdf5-dev \
+        sqlite3 \
+        libsqlite3-dev \
+        imagemagick \
+  	libreadline-dev \
+	spatialite-bin \
+	libspatialindex-dev \
+        libspatialite-dev \
+	libopenblas-dev \
+	liblapack-dev \
+        libnetcdf-dev \
+        libgdal-dev \
     && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 en_US.UTF-8
-
 
 ENV CONDA_VERSION=4.5.1 \
     TINI_VERSION=0.16.1 \
@@ -61,43 +81,50 @@ RUN mkdir ${HOME}/work \
     && conda clean -tipsy \
     && rm -rf ${HOME}/.cache/yarn \
     && echo ". ${CONDA_DIR}/etc/profile.d/conda.sh" >> ${HOME}/.bashrc \
-    && echo "conda activate base" >> ${HOME}/.bashrc \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && echo "conda activate base" >> ${HOME}/.bashrc 
 
 RUN conda install -y \
-       'python=3.6.3' \
-       'blas=*=openblas' \
-       'numpy=1.13.*' \
        'notebook=5.5.*' \
        'jupyterlab=0.32.*' \
-    && conda install -y \
-       'ipywidgets=7.2*' \
-       'cython=0.28*' \
-       'pandas=0.22*' \
-       'matplotlib=2.2*' \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && conda clean -tipsy 
 
 RUN conda install -y \
-       'scipy=1.1*' \
-       'scikit-learn=0.19*' \
-       'seaborn=0.8*' \
-       'sympy=1.1*' \
+       'blas=1.1=*openblas*' \
+       'numpy=1.13.*=*openblas*' \
        'bokeh=0.12*' \
-       'statsmodels=0.8*' \
-       'sqlalchemy=1.2*' \
-       'ipython-sql=0.3.*' \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && conda clean -tipsy 
+
+RUN conda install -y \
+       'cython=0.28*' \
+       'pandas=0.23*' \
+       'scipy=1.1*=*openblas*' \
+       'scikit-learn=0.19*=*openblas*' \
+       'sympy=1.1*' \
+       'statsmodels=0.9*' \
+    && conda clean -tipsy 
+
+RUN conda install -y \
+       'icu=58.2*' \
+       'ffmpeg=3.4.1' \
+       'hdf5=1.10.1' \
+       'libxml2=2.9*' \
+       'h5py=2.7*' \
+    && conda clean -tipsy 
+
+RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \
+    && conda clean -tipsy 
+
+RUN conda install -y \
+       'matplotlib=2.2*' \
+       'ipywidgets=7.2*' \
+       'seaborn=0.8*' \
+        ipyleaflet  \
+    && conda remove -y --force qt pyqt \
+    && conda clean -tipsy 
 
 RUN conda install -y \
        'cloudpickle=0.5*' \
        'dill=0.2*' \
-       'hdf5=1.10*' \
-       'h5py=2.7*' \
        'vincent=0.4.*' \
        'beautifulsoup4=4.6.*' \
        'protobuf=3.*' \    
@@ -105,20 +132,17 @@ RUN conda install -y \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
        'pyarrow=0.9.*' \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+       'sqlalchemy=1.2.8' \
+       'ipython-sql=0.3.*' \
+    && conda clean -tipsy 
 
-RUN conda install -y xlrd nodejs keras \
-    && conda install -y numba -c numba \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-RUN conda install -y ipyleaflet opencv \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+RUN  conda install -y \
+        xlrd \
+        nodejs \
+        keras \
+    && conda install -y \
+        numba -c numba \
+    && conda clean -tipsy 
 
 RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
     && jupyter labextension install @jupyter-widgets/jupyterlab-manager@^0.35 \
@@ -127,35 +151,44 @@ RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
     && rm -rf ${HOME}/.cache/yarn \
     && rm -rf ${HOME}/.node-gyp \
     && conda clean -tipsy \
-    && npm cache clean --force \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && npm cache clean --force 
 
 # Import matplotlib the first time to build the font cache.
 ENV XDG_CACHE_HOME ${HOME}/.cache/
-RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" \
-    && fix-permissions ${HOME}
+RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" 
 
 RUN pip install --no-cache-dir jupyter_http_over_ws \
-    && jupyter serverextension enable --py jupyter_http_over_ws \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && jupyter serverextension enable --py jupyter_http_over_ws 
+
+# Python 2.7
+
+RUN conda create -n python27 python=2.7 ipykernel \
+    && conda clean -tipsy 
+
+RUN conda install -n python27 -c conda-forge \
+       'blas=*=*openblas*' \
+       'numpy=1.14.*=*openblas*' \
+       'pandas=0.23.*' \
+       'ipywidgets=7.2.*' \
+       'matplotlib=2.2.*' \
+       'sqlalchemy=1.2.*' \
+       'ipython-sql=0.3.*' \
+       'libpq=9.6.*' \
+       'psycopg2=2.7.*' \
+       'pymysql=0.8.*' \
+    && conda clean -tipsy
+
+RUN ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
+    && mv ${HOME}/.local/share/jupyter/kernels/python2 ${CONDA_DIR}/share/jupyter/kernels/ \
+    && chmod -R go+rx ${CONDA_DIR}/share/jupyter
+
+ENV JUPYTER_HAS_PYTHON2=2.7
 
 # R 3.4
 
-USER root
-RUN apt-get update --fix-missing \
-    && apt-get install -qy --no-install-recommends \
-	build-essential \
-	gfortran \
-	gcc \
-        g++ \
-    && rm -rf /var/lib/apt/lists/* 
-USER $NB_USER
-
-RUN conda install -y \
-    'rpy2=2.8*' \
-    'r-base=3.4*' \
+RUN conda install -n python27 -y \
+    'rpy2' \
+    'r-base' \
     'r-irkernel' \
     'r-plyr' \
     'r-devtools' \
@@ -165,7 +198,6 @@ RUN conda install -y \
     'r-forecast' \
     'r-rsqlite' \
     'r-rpostgresql' \
-    'r-rmysql' \
     'r-reshape2' \
     'r-nycflights13' \
     'r-caret' \
@@ -176,41 +208,32 @@ RUN conda install -y \
     'r-sparklyr' \
     'r-htmlwidgets' \
     'r-hexbin' \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && conda clean -tipsy
 
-ENV JUPYTER_HAS_R=3.4
+RUN mv ${CONDA_DIR}/envs/python27/share/jupyter/kernels/ir ${CONDA_DIR}/share/jupyter/kernels/ \
+    && chmod -R go+rx ${CONDA_DIR}/share/jupyter
 
-# Python 2.7
+ENV JUPYTER_HAS_R=3.4 \
+    R_HOME=$CONDA_DIR/envs/python27/lib/R \
+    PATH=$PATH:$CONDA_DIR/envs/python27/lib/R/bin
 
-RUN conda create -n python27 python=2.7 ipykernel \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+RUN pip install --no-cache-dir \
+	'rpy2==2.8.6' \
+	Wand \
+	openpyxl \      
+	geopandas \
+        rtree
 
-RUN conda install -n python27 -c conda-forge \
-       'blas=*=openblas' \
-       'numpy=1.13.*' \
-       'pandas=0.22.*' \
-       'ipywidgets=7.2.*' \
-       'matplotlib=2.2.*' \
-       'sqlalchemy=1.2.*' \
-       'ipython-sql=0.3.*' \
-       'libpq=9.6.*' \
-       'psycopg2=2.7.*' \
-       'pymysql=0.8.*' \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+RUN conda install -y \
+	graphviz \
+	python-graphviz \
+	pydot \
+        'networkx=2.*' \
+        folium \
+    && conda clean -tipsy
 
-RUN ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
-    && mv ${HOME}/.local/share/jupyter/kernels/python2 ${CONDA_DIR}/share/jupyter/kernels/ \
-    && chmod -R go+rx ${CONDA_DIR}/share/jupyter \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-ENV JUPYTER_HAS_PYTHON2=2.7
+RUN fix-permissions ${CONDA_DIR} 
+RUN fix-permissions ${HOME}
 
 USER root
 

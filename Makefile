@@ -1,4 +1,4 @@
-export REVISION = 1.7
+export REVISION = 1.8
 export OWNER = sudachen
 
 DEFAULT = jupy2r
