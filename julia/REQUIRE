@@ -7,7 +7,6 @@ MacroTools 0.4.0
 Conda 0.7.1
 DataStreams 0.3.4
 DataFrames 0.11.6
-Gadfly 0.6.0
 LibPQ 0.3.0
 MySQL 0.5.2
 CSV 0.2.4
@@ -25,8 +24,10 @@ StatsModels 0.2.5
 TimeSeries 0.11.1
 Clustering 0.9.1
 StatsFuns 0.6.0
-GitHub 4.0.0
-HTTP 0.6.9
-LibCURL 0.2.2
 PyCall 1.16.1
+Gadfly 0.6.0
 PyCallJLD
+RCall
+RDatasets
+Mocha
+
