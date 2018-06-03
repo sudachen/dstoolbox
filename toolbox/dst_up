@@ -6,3 +6,5 @@ cat Dockerfile.in > Dockerfile
 if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
 docker-compose down
 docker-compose up --build -d
+docker container prune -f
+docker image prune -f

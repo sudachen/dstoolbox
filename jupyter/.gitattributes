@@ -1,2 +1,3 @@
-fix-perimissions binary
-tini-0.16.1 binary
+fix-perimissions text eol=lf
+tini-0.16.1 -text
+

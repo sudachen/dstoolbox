@@ -31,15 +31,6 @@ RUN apt-get update --fix-missing \
         libhdf5-dev \
         sqlite3 \
         libsqlite3-dev \
-        imagemagick \
-  	libreadline-dev \
-	spatialite-bin \
-	libspatialindex-dev \
-        libspatialite-dev \
-	libopenblas-dev \
-	liblapack-dev \
-        libnetcdf-dev \
-        libgdal-dev \
     && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 en_US.UTF-8
 
@@ -119,6 +110,10 @@ RUN conda install -y \
        'ipywidgets=7.2*' \
        'seaborn=0.8*' \
         ipyleaflet  \
+	openpyxl \      
+	geopandas \
+        folium \
+        rtree \
     && conda remove -y --force qt pyqt \
     && conda clean -tipsy 
 
@@ -146,7 +141,7 @@ RUN  conda install -y \
 
 RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
     && jupyter labextension install @jupyter-widgets/jupyterlab-manager@^0.35 \
-    && jupyter labextension install jupyterlab_bokeh \
+                                    jupyterlab_bokeh \
     && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
     && rm -rf ${HOME}/.cache/yarn \
     && rm -rf ${HOME}/.node-gyp \
@@ -217,20 +212,31 @@ ENV JUPYTER_HAS_R=3.4 \
     R_HOME=$CONDA_DIR/envs/python27/lib/R \
     PATH=$PATH:$CONDA_DIR/envs/python27/lib/R/bin
 
-RUN pip install --no-cache-dir \
-	'rpy2==2.8.6' \
-	Wand \
-	openpyxl \      
-	geopandas \
-        rtree
-
 RUN conda install -y \
 	graphviz \
 	python-graphviz \
 	pydot \
         'networkx=2.*' \
-        folium \
     && conda clean -tipsy
+
+USER root
+RUN apt-get update --fix-missing \
+    && apt-get install -qy --no-install-recommends \
+        imagemagick \
+        libreadline-dev \
+        spatialite-bin \
+#       libspatialindex-dev \
+#       libspatialite-dev \
+#       libopenblas-dev \
+#       liblapack-dev \
+#       libnetcdf-dev \
+#       libgdal-dev \
+    && rm -rf /var/lib/apt/lists/* 
+USER $NB_USER
+
+RUN pip install --no-cache-dir \
+	'rpy2==2.8.6' \
+	Wand 
 
 RUN fix-permissions ${CONDA_DIR} 
 RUN fix-permissions ${HOME}

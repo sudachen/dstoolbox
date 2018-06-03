@@ -13,9 +13,9 @@ $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}:
 
 build: 
 	mkdir -p ${TAGS_DIR}
-	if [ ! -f $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION} ]; \
+	if [ ! -f $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE} ]; \
 		then if docker pull ${OWNER}/${IMAGE}:${REVISION}; \
-			then touch $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}; \
+			then touch $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}; \
 			else $(MAKE) -f ../Makefile.docker $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}; \
 			fi; \
 		fi
