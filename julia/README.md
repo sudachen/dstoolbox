@@ -1,4 +1,4 @@
-### Julia 0.6 for JupyterLab
+### Julia 0.6.3 for JupyterLab
 #### extension to [sudachen/jupyter](/r/sudachen/jupyter) image
 
 [Git Repository](https://github.com/sudachen/dstoolbox/tree/master/julia)
