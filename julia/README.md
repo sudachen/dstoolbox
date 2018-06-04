@@ -3,93 +3,131 @@
 
 [Git Repository](https://github.com/sudachen/dstoolbox/tree/master/julia)
 
-AxisAlgorithms 0.2.0   
-BinDeps 0.8.8   
-BinaryProvider 0.3.0   
-Blosc 0.5.0   
-CMakeWrapper 0.1.0   
-CSV 0.2.4   
-Calculus 0.3.1   
-CategoricalArrays 0.3.9   
-CodecZlib 0.4.3   
-ColorTypes 0.6.7   
-Colors 0.8.2   
-CommonSubexpressions 0.1.0   
-Compat 0.65.0   
-Compose 0.6.0   
-Conda 0.7.1   
-Contour 0.4.0   
-CoupledFields 0.0.1   
-DataArrays 0.7.0   
-DataFrames 0.11.6   
-DataStreams 0.3.4   
-DataStructures 0.8.2   
-DecFP 0.4.3   
-Decimals 0.2.1   
-DiffEqDiffTools 0.4.1   
-DiffResults 0.0.3   
-DiffRules 0.0.4   
-Distances 0.6.0   
-Distributions 0.15.0   
-DocStringExtensions 0.4.4   
-DualNumbers 0.3.0   
-FixedPointNumbers 0.4.6   
-ForwardDiff 0.7.5   
-GR 0.31.0   
-Gadfly 0.7.0   
-HDF5 0.9.2   
-Hexagons 0.1.0   
-IJulia 1.8.0   
-IndirectArrays 0.4.2   
-Interpolations 0.7.3   
-IterTools 0.2.1   
-JSON 0.17.2   
-Juno 0.4.1   
-KernelDensity 0.4.1   
-LayerDicts 0.1.0   
-LegacyStrings 0.3.0   
-LibPQ 0.3.0   
-LineSearches 3.2.5   
-Loess 0.3.0   
-MacroTools 0.4.0   
-MbedTLS 0.5.8   
-Measures 0.2.0   
-Media 0.3.0   
-Memento 0.6.0   
-Missings 0.2.9   
-Mocking 0.5.2   
-MySQL 0.5.2   
-NLSolversBase 4.4.1   
-NaNMath 0.3.1   
-NamedTuples 4.0.2   
-Nullables 0.0.5   
-OffsetArrays 0.5.0   
-Optim 0.14.1   
-PDMats 0.8.0   
-Parameters 0.8.1   
-PlotThemes 0.2.0   
-PlotUtils 0.4.4   
-Plots 0.17.1   
-PositiveFactorizations 0.1.0   
-QuadGK 0.2.1   
-Ratios 0.2.0   
-RecipesBase 0.3.1   
-Reexport 0.1.0   
-Requires 0.4.3   
-Rmath 0.3.2   
-SHA 0.5.7   
-SQLite 0.5.0   
-ShowItLikeYouBuildIt 0.2.0   
-Showoff 0.1.1   
-SortingAlgorithms 0.2.1   
-SpecialFunctions 0.4.0   
-StaticArrays 0.7.0   
-StatsBase 0.22.0   
-StatsFuns 0.6.0   
-Syslogs 0.2.0   
-TimeZones 0.6.6   
-TranscodingStreams 0.5.2   
-URIParser 0.3.1   
-WeakRefStrings 0.4.6   
-WoodburyMatrices 0.2.2   
-ZMQ 0.6.1   
+```
+Pkg.status()
+
+35 required packages:
+ - BinDeps                       0.8.8
+ - CSV                           0.2.4
+ - Clustering                    0.9.1
+ - Compat                        0.66.0
+ - Conda                         0.7.1
+ - DataFrames                    0.11.6
+ - DataStreams                   0.3.4
+ - Gadfly                        0.7.0
+ - HDF5                          0.9.2
+ - Hiccup                        0.1.1
+ - IJulia                        1.8.0
+ - JLD                           0.8.3
+ - JSON                          0.17.2
+ - LibPQ                         0.3.0
+ - MacroTools                    0.4.0
+ - Mocha                         0.3.1
+ - MySQL                         0.5.2
+ - Nullables                     0.0.5
+ - Pandas                        0.6.3
+ - ParserCombinator              1.7.11
+ - Plots                         0.17.1
+ - PyCall                        1.16.1
+ - PyCallJLD                     0.0.2
+ - PyPlot                        2.5.0
+ - RCall                         0.10.6
+ - RDatasets                     0.4.0
+ - Reactive                      0.6.0
+ - SQLite                        0.5.0
+ - ScikitLearn                   0.3.0+             master
+ - SimpleTraits                  0.6.0
+ - StatsBase                     0.23.0
+ - StatsFuns                     0.6.0
+ - StatsModels                   0.2.5
+ - TimeSeries                    0.11.1
+ - WeakRefStrings                0.4.6
+87 additional packages:
+ - AutoHashEquals                0.2.0
+ - AxisAlgorithms                0.2.0
+ - AxisArrays                    0.2.1
+ - BinaryProvider                0.3.0
+ - Blosc                         0.5.0
+ - CMakeWrapper                  0.1.0
+ - Calculus                      0.4.0
+ - CategoricalArrays             0.3.9
+ - CodecZlib                     0.4.3
+ - ColorTypes                    0.6.7
+ - Colors                        0.8.2
+ - CommonSubexpressions          0.1.0
+ - Compose                       0.6.0
+ - Contour                       0.4.0
+ - CoupledFields                 0.0.1
+ - DataArrays                    0.7.0
+ - DataStructures                0.8.3
+ - DataValues                    0.3.3
+ - DecFP                         0.4.3
+ - Decimals                      0.2.1
+ - DiffEqDiffTools               0.4.1
+ - DiffResults                   0.0.3
+ - DiffRules                     0.0.4
+ - Distances                     0.6.0
+ - Distributions                 0.15.0
+ - DocStringExtensions           0.4.4
+ - DualNumbers                   0.3.0
+ - FileIO                        0.9.0
+ - FixedPointNumbers             0.4.6
+ - ForwardDiff                   0.7.5
+ - GR                            0.31.0
+ - Hexagons                      0.1.0
+ - IndirectArrays                0.4.2
+ - Interpolations                0.7.3
+ - IntervalSets                  0.2.0
+ - IterTools                     0.2.1
+ - IteratorInterfaceExtensions   0.0.2
+ - Iterators                     0.3.1
+ - Juno                          0.4.1
+ - KernelDensity                 0.4.1
+ - LaTeXStrings                  0.3.0
+ - LayerDicts                    0.1.0
+ - Lazy                          0.12.0
+ - LegacyStrings                 0.3.0
+ - LineSearches                  3.2.5
+ - Loess                         0.3.0
+ - MbedTLS                       0.5.10
+ - Measures                      0.2.0
+ - Media                         0.3.0
+ - Memento                       0.7.0
+ - Missings                      0.2.9
+ - Mocking                       0.5.2
+ - NLSolversBase                 4.4.1
+ - NaNMath                       0.3.1
+ - NamedTuples                   4.0.2
+ - NearestNeighbors              0.3.0
+ - OffsetArrays                  0.5.0
+ - Optim                         0.14.1
+ - PDMats                        0.8.0
+ - Parameters                    0.8.1
+ - PlotThemes                    0.2.0
+ - PlotUtils                     0.4.4
+ - PositiveFactorizations        0.1.0
+ - QuadGK                        0.2.1
+ - RData                         0.4.0
+ - RangeArrays                   0.2.0
+ - Ratios                        0.2.0
+ - RecipesBase                   0.3.1
+ - Reexport                      0.1.0
+ - Requires                      0.4.3
+ - Rmath                         0.3.3
+ - SHA                           0.5.7
+ - ScikitLearnBase               0.3.0
+ - ShowItLikeYouBuildIt          0.2.0
+ - Showoff                       0.2.0
+ - SortingAlgorithms             0.2.1
+ - SpecialFunctions              0.4.0
+ - StaticArrays                  0.7.0
+ - Syslogs                       0.2.0
+ - TableTraits                   0.2.0
+ - TableTraitsUtils              0.1.3
+ - TimeZones                     0.7.0
+ - TranscodingStreams            0.5.2
+ - URIParser                     0.3.1
+ - VersionParsing                1.1.0
+ - WoodburyMatrices              0.2.2
+ - ZMQ                           0.6.1
+```
