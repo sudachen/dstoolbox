@@ -5,8 +5,17 @@ tr -d '\015' < /opt/julia/v0.6/REQUIRE | cut -d " " -f 1 | while read l
     then 
       echo print\(\"using $l\\n\"\) >> /tmp/1.jl
       echo using $l >> /tmp/1.jl
+    else
+      if [ -f /tmp/1.jl ]
+        then
+          julia /tmp/1.jl
+          rm /tmp/1.jl
+        fi
     fi 
   done  
 
-julia /tmp/1.jl
-rm /tmp/1.jl
+if [ -f /tmp/1.jl ]
+  then
+    julia /tmp/1.jl
+    rm /tmp/1.jl
+  fi

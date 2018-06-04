@@ -26,8 +26,4 @@ Clustering 0.9.1
 StatsFuns 0.6.0
 PyCall 1.16.1
 Gadfly 0.6.0
-PyCallJLD
-RCall
-RDatasets
-Mocha
 
