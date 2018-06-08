@@ -29,8 +29,11 @@ ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     DATALAB_ROOT=$HOME 
 
 # GitHub
+# DrawIO
 
-RUN jupyter labextension install @jupyterlab/github \
+RUN jupyter labextension install \
+        @jupyterlab/github \
+        jupyterlab-drawio \
     && pip install --no-cache-dir jupyterlab_github \
     && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
     && rm -rf ${HOME}/.cache/yarn \
@@ -40,16 +43,14 @@ RUN jupyter labextension install @jupyterlab/github \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
 
-# DrawIO
 
-RUN jupyter labextension install jupyterlab-drawio \
-    && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
-    && rm -rf ${HOME}/.cache/yarn \
-    && rm -rf ${HOME}/.node-gyp \
-    && conda clean -tipsy \
-    && npm cache clean --force \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+# Additional modules by conda
+
+RUN conda install -y \
+        fbprophet \
+        geopy \
+    && conda remove -y --force qt pyqt \
+    && conda clean -tipsy 
 
 # Hacked
 
@@ -60,4 +61,3 @@ RUN pip install -U --no-cache-dir \
     && conda clean -tipsy \
     && fix-permissions ${CONDA_DIR} \
     && fix-permissions ${HOME}
-
