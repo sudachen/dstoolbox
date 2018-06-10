@@ -15,15 +15,7 @@ Hiccup 0.1.1
 Plots 0.17.1
 HDF5 0.9.2
 SimpleTraits 0.6.0
-Reactive 0.6.0
-ParserCombinator 1.7.11
 JLD 0.8.3
 IJulia 0.7.1
-StatsBase 0.22.0
-StatsModels 0.2.5
-TimeSeries 0.11.1
-Clustering 0.9.1
-StatsFuns 0.6.0
 PyCall 1.16.1
 Gadfly 0.6.0
-

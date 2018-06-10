@@ -1,16 +1,22 @@
-FROM sudachen/julia:latest
+FROM sudachen/jupyter:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
-
-# Google Drive
 
 ENV GCLOUD_DIR /opt/google_cloud
 
 USER root
+
+RUN apt-get update --fix-missing \
+    && apt-get install -qy --no-install-recommends \
+       zbar-tools \
+    && rm -rf /var/lib/apt/lists/* 
+
 RUN mkdir ${GCLOUD_DIR} \
     && chown ${NB_USER}:${NB_GID} ${GCLOUD_DIR} \
     && fix-permissions ${GCLOUD_DIR} 
 
 USER $NB_USER    
+
+# Google Drive
 
 RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-202.0.0-linux-x86_64.tar.gz \
 	| gzip -d \
@@ -40,24 +46,30 @@ RUN jupyter labextension install \
     && rm -rf ${HOME}/.node-gyp \
     && conda clean -tipsy \
     && npm cache clean --force \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && fix-permissions ${CONDA_DIR} 
 
 
-# Additional modules by conda
+# Additional modules 
 
 RUN conda install -y \
         fbprophet \
-        geopy \
     && conda remove -y --force qt pyqt \
     && conda clean -tipsy 
 
-# Hacked
-
 RUN pip install -U --no-cache-dir \
-	singleton_decorator \
-	git+git://github.com/sudachen/ipython-sql@master \
-	git+git://github.com/sudachen/PyDrive \
+        pyotp \
+	    singleton_decorator \
+	    git+git://github.com/sudachen/ipython-sql@master \
+	    git+git://github.com/sudachen/PyDrive \
     && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && fix-permissions ${CONDA_DIR} 
+
+RUN conda install -y \
+        line_profiler \
+    && conda clean -tipsy 
+
+USER root
+# user have to mount external volume!
+RUN chown root:root /home/jupyter/work \
+    && ln -s /home/jupyter/work /Files
+USER $NB_USER    

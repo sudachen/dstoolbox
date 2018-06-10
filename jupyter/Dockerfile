@@ -6,12 +6,12 @@ RUN apt-get update --fix-missing \
     && apt-get install -qy --no-install-recommends \
 	ca-certificates \
 	wget \
-    	git \	
-    	bash \
-    	sudo \
+    git \	
+    bash \
+    sudo \
 	unzip \
 	bzip2 \
-    	tzdata \
+    tzdata \
 	locales \
 	libsm6 \
 	libxt6 \
@@ -19,18 +19,21 @@ RUN apt-get update --fix-missing \
 	fonts-dejavu \
 	fonts-liberation \
 	procps \
-        \
+    \
 	build-essential \
 	gfortran \
 	gcc \
-        g++ \
-        \
-    	libpq5 \
+    g++ \
+    \
+    libpq5 \
 	libpq-dev \
-        hdf5-tools \
-        libhdf5-dev \
-        sqlite3 \
-        libsqlite3-dev \
+    hdf5-tools \
+    libhdf5-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    imagemagick \
+    libreadline-dev \
+    spatialite-bin \
     && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 en_US.UTF-8
 
@@ -77,24 +80,18 @@ RUN mkdir ${HOME}/work \
 RUN conda install -y \
        'notebook=5.5.*' \
        'jupyterlab=0.32.*' \
-    && conda clean -tipsy 
-
-RUN conda install -y \
+    && conda install -y \
        'blas=1.1=*openblas*' \
-       'numpy=1.13.*=*openblas*' \
+       'numpy=1.14.*=*openblas*' \
        'bokeh=0.12*' \
-    && conda clean -tipsy 
-
-RUN conda install -y \
+    && conda install -y \
        'cython=0.28*' \
        'pandas=0.23*' \
        'scipy=1.1*=*openblas*' \
        'scikit-learn=0.19*=*openblas*' \
        'sympy=1.1*' \
        'statsmodels=0.9*' \
-    && conda clean -tipsy 
-
-RUN conda install -y \
+    && conda install -y \
        'icu=58.2*' \
        'ffmpeg=3.4.1' \
        'hdf5=1.10.1' \
@@ -103,15 +100,13 @@ RUN conda install -y \
     && conda clean -tipsy 
 
 RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \
-    && conda clean -tipsy 
-
-RUN conda install -y \
+    && conda install -y \
        'matplotlib=2.2*' \
        'ipywidgets=7.2*' \
        'seaborn=0.8*' \
         ipyleaflet  \
-	openpyxl \      
-	geopandas \
+	    openpyxl \      
+	    geopandas \
         folium \
         rtree \
     && conda remove -y --force qt pyqt \
@@ -129,9 +124,7 @@ RUN conda install -y \
        'pyarrow=0.9.*' \
        'sqlalchemy=1.2.8' \
        'ipython-sql=0.3.*' \
-    && conda clean -tipsy 
-
-RUN  conda install -y \
+    && conda install -y \
         xlrd \
         nodejs \
         keras \
@@ -158,9 +151,7 @@ RUN pip install --no-cache-dir jupyter_http_over_ws \
 # Python 2.7
 
 RUN conda create -n python27 python=2.7 ipykernel \
-    && conda clean -tipsy 
-
-RUN conda install -n python27 -c conda-forge \
+    && conda install -n python27 -c conda-forge \
        'blas=*=*openblas*' \
        'numpy=1.14.*=*openblas*' \
        'pandas=0.23.*' \
@@ -171,13 +162,10 @@ RUN conda install -n python27 -c conda-forge \
        'libpq=9.6.*' \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
-    && conda clean -tipsy
-
-RUN ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
+    && conda clean -tipsy \
+    && ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
     && mv ${HOME}/.local/share/jupyter/kernels/python2 ${CONDA_DIR}/share/jupyter/kernels/ \
     && chmod -R go+rx ${CONDA_DIR}/share/jupyter
-
-ENV JUPYTER_HAS_PYTHON2=2.7
 
 # R 3.4
 
@@ -203,47 +191,74 @@ RUN conda install -n python27 -y \
     'r-sparklyr' \
     'r-htmlwidgets' \
     'r-hexbin' \
-    && conda clean -tipsy
-
-RUN mv ${CONDA_DIR}/envs/python27/share/jupyter/kernels/ir ${CONDA_DIR}/share/jupyter/kernels/ \
+    && conda clean -tipsy \
+    && mv ${CONDA_DIR}/envs/python27/share/jupyter/kernels/ir ${CONDA_DIR}/share/jupyter/kernels/ \
     && chmod -R go+rx ${CONDA_DIR}/share/jupyter
 
-ENV JUPYTER_HAS_R=3.4 \
-    R_HOME=$CONDA_DIR/envs/python27/lib/R \
+ENV R_HOME=$CONDA_DIR/envs/python27/lib/R \
     PATH=$PATH:$CONDA_DIR/envs/python27/lib/R/bin
 
 RUN conda install -y \
-	graphviz \
-	python-graphviz \
-	pydot \
+	    graphviz \
+	    python-graphviz \
+	    pydot \
         'networkx=2.*' \
-    && conda clean -tipsy
+        geopy \ 
+    && conda clean -tipsy \
+    && pip install --no-cache-dir \
+	    'rpy2==2.8.6' \
+	    Wand 
+
+RUN fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
+
+ENV JULIA_PKGDIR=/opt/julia \
+    JULIA_RC=${HOME}/.juliarc.jl \
+    JULIA_VERSION=0.6.3 \
+    JULIA_PKGDIR_VER=/opt/julia/v0.6 \ 
+    JULIA_CACHE=/opt/julia/.cache 
 
 USER root
-RUN apt-get update --fix-missing \
-    && apt-get install -qy --no-install-recommends \
-        imagemagick \
-        libreadline-dev \
-        spatialite-bin \
-#       libspatialindex-dev \
-#       libspatialite-dev \
-#       libopenblas-dev \
-#       liblapack-dev \
-#       libnetcdf-dev \
-#       libgdal-dev \
-    && rm -rf /var/lib/apt/lists/* 
-USER $NB_USER
+RUN mkdir /opt/julia-${JULIA_VERSION} \
+    && cd /tmp \
+    && wget -q https://julialang-s3.julialang.org/bin/linux/x64/`echo ${JULIA_VERSION} | cut -d. -f 1,2`/julia-${JULIA_VERSION}-linux-x86_64.tar.gz \
+    && tar xzf julia-${JULIA_VERSION}-linux-x86_64.tar.gz -C /opt/julia-${JULIA_VERSION} --strip-components=1 \
+    && rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz \
+    && ln -fs /opt/julia-*/bin/julia /usr/local/bin/julia \
+    && mkdir ${JULIA_PKGDIR} \
+    && chown $NB_USER ${JULIA_PKGDIR} \
+    && fix-permissions ${JULIA_PKGDIR}
 
-RUN pip install --no-cache-dir \
-	'rpy2==2.8.6' \
-	Wand 
+ADD REQUIRE $JULIA_PKGDIR_VER/REQUIRE1
+ADD precompile $JULIA_PKGDIR_VER/precompile
+RUN chown -R $NB_USER ${JULIA_PKGDIR}
+USER $NB_UID
 
-RUN fix-permissions ${CONDA_DIR} 
-RUN fix-permissions ${HOME}
+RUN echo "@everywhere push!(Libdl.DL_LOAD_PATH, \"${CONDA_DIR}/envs/python27/lib\")" >> ${JULIA_RC} \
+    && echo "@everywhere ENV[\"PATH\"]=\"${CONDA_DIR}/envs/python27/bin:\$(ENV[\"PATH\"])\"" >> ${JULIA_RC} \
+    && echo "@everywhere ENV[\"PYTHON\"]=\"${CONDA_DIR}/envs/python27/bin/python2\"" >> ${JULIA_RC} \
+    && echo "@everywhere ENV[\"CONDA_DEFAULT_ENV\"]=\"python27\"" >> ${JULIA_RC} \
+    && julia -e 'Pkg.init(); Pkg.update();' \
+    && rm ${JULIA_PKGDIR_VER}/REQUIRE \
+    && mv ${JULIA_PKGDIR_VER}/REQUIRE1 ${JULIA_PKGDIR_VER}/REQUIRE \
+    && julia -e 'Pkg.resolve()' 
+
+RUN conda install -y -n python27 \
+       'scikit-learn=0.19*=*openblas*' \
+    && conda clean -tipsy \
+    && julia -e 'Pkg.clone("https://github.com/cstjean/ScikitLearn.jl","ScikitLearn")' \
+    && julia -e 'Pkg.build("ScikitLearn"); using ScikitLearn' \
+    && julia -e 'Pkg.add("Pandas"); Pkg.add("PyPlot"); using Pandas; using PyPlot' \
+    && julia -e 'Pkg.add("PyCallJLD"); using PyCallJLD' \
+    && julia -e 'Pkg.add("RCall"); Pkg.add("RDatasets"); using RCall; using RDatasets'
+
+RUN chmod a+x ${JULIA_PKGDIR_VER}/precompile \ 
+    && ${JULIA_PKGDIR_VER}/precompile \
+    && mv ${HOME}/.local/share/jupyter/kernels/julia* ${CONDA_DIR}/share/jupyter/kernels/ \
+    && chmod -R go+rx ${CONDA_DIR}/share/jupyter 
 
 USER root
 
-#ADD https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini /usr/bin/tini
 ADD tini-${TINI_VERSION} /usr/bin/tini
 ADD jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py
 RUN chmod +x /usr/bin/tini \
