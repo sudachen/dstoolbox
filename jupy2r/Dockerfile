@@ -1,22 +1,16 @@
-FROM sudachen/jupyter:latest
+FROM sudachen/julia:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
+
+# Google Drive
 
 ENV GCLOUD_DIR /opt/google_cloud
 
 USER root
-
-RUN apt-get update --fix-missing \
-    && apt-get install -qy --no-install-recommends \
-       zbar-tools \
-    && rm -rf /var/lib/apt/lists/* 
-
 RUN mkdir ${GCLOUD_DIR} \
     && chown ${NB_USER}:${NB_GID} ${GCLOUD_DIR} \
     && fix-permissions ${GCLOUD_DIR} 
 
 USER $NB_USER    
-
-# Google Drive
 
 RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-202.0.0-linux-x86_64.tar.gz \
 	| gzip -d \
@@ -46,30 +40,76 @@ RUN jupyter labextension install \
     && rm -rf ${HOME}/.node-gyp \
     && conda clean -tipsy \
     && npm cache clean --force \
-    && fix-permissions ${CONDA_DIR} 
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
 
+# Spark
+
+ENV APACHE_SPARK_VERSION=2.3.0 \
+    HADOOP_VERSION=2.7 \
+    SPARK_HOME=/opt/spark \
+    PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.6-src.zip \
+    SPARK_XMX=2048M
+
+USER root
+
+RUN mkdir ${SPARK_HOME} \
+    && apt-get update  --fix-missing \
+    && apt-get install --no-install-recommends -qy \
+        time \
+        openjdk-8-jre-headless \
+        ca-certificates-java \
+    && rm -rf /var/lib/apt/lists/* \
+    && cd /tmp \
+    && wget -q http://apache.claz.org/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && tar xzf spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz -C ${SPARK_HOME} --strip-components=1 \
+    && rm spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+    && chown $NB_USER ${SPARK_HOME} \
+    && fix-permissions ${SPARK_HOME}
+
+USER $NB_USER  
 
 # Additional modules 
 
 RUN conda install -y \
         fbprophet \
-    && conda remove -y --force qt pyqt \
-    && conda clean -tipsy 
-
-RUN pip install -U --no-cache-dir \
-        pyotp \
-	    singleton_decorator \
-	    git+git://github.com/sudachen/ipython-sql@master \
-	    git+git://github.com/sudachen/PyDrive \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} 
-
-RUN conda install -y \
+        geopy \
         line_profiler \
-    && conda clean -tipsy 
+        pymc \
+        pyTables \
+        pyspark \
+    && conda remove -y --force qt pyqt \
+    \
+    && pip install -U --no-cache-dir \
+        spark_sklearn \
+        singleton_decorator \
+        git+git://github.com/sudachen/ipython-sql@master \
+        git+git://github.com/sudachen/PyDrive \
+    \
+    && conda clean -tipsy \
+    && fix-permissions ${CONDA_DIR} \
+    && fix-permissions ${HOME}
 
-USER root
-# user have to mount external volume!
-RUN chown root:root /home/jupyter/work \
-    && ln -s /home/jupyter/work /Files
-USER $NB_USER    
+#ENV HADOOP_FULL_VERSION=2.7.2 \
+#    HADOOP_HOME=/opt/hadoop \
+#    HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop \
+#    PATH=$PATH:/opt/hadoop/bin
+#
+#USER root
+#RUN mkdir ${HADOOP_HOME} \
+#    && curl -sL --retry 3 \
+#    "http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_FULL_VERSION}/hadoop-${HADOOP_FULL_VERSION}.tar.gz" \
+#    | gunzip \
+#    | tar -x -C ${HADOOP_HOME} --strip-components=1 \
+#    && rm -rf ${HADOOP_HOME}/share/doc \
+#    && chown $NB_USER ${HADOOP_HOME} \
+#    && fix-permissions ${HADOOP_HOME}
+#
+#USER $NB_USER  
+
+ENV SPARK_OPTS=\
+        --driver-java-options=-Xms1024M \
+        --driver-java-options=-Xmx$SPARK_XMX \
+        --driver-java-options=-Dlog4j.logLevel=info
+
+USER $NB_UID
