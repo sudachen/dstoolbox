@@ -1,4 +1,4 @@
-FROM sudachen/julia:latest
+FROM sudachen/jupyter:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
 # Google Drive
@@ -78,6 +78,7 @@ RUN conda install -y \
         pymc \
         pyTables \
         pyspark \
+        sqlalchemy-redshift \
     && conda remove -y --force qt pyqt \
     \
     && pip install -U --no-cache-dir \
@@ -106,6 +107,10 @@ RUN conda install -y \
 #    && fix-permissions ${HADOOP_HOME}
 #
 #USER $NB_USER  
+
+USER root
+RUN ln -s ${HOME}/work /Files
+USER $NB_USER  
 
 ENV SPARK_OPTS=\
         --driver-java-options=-Xms1024M \
