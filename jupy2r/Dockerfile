@@ -110,6 +110,12 @@ RUN conda install -y \
 
 USER root
 RUN ln -s ${HOME}/work /Files
+RUN apt-get update  --fix-missing \
+    && apt-get install --no-install-recommends -qy \
+        mysql-client \
+        mysql-utilities \
+        postgresql-client \
+    && rm -rf /var/lib/apt/lists/* 
 USER $NB_USER  
 
 ENV SPARK_OPTS=\
