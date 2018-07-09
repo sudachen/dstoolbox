@@ -2,8 +2,26 @@
 CONFIG_DIR=${HOME}/.dstoolbox
 
 cd ${CONFIG_DIR}
-cat Dockerfile.in > Dockerfile
-if [ -f Dockerfile.user ]; then cat Dockerfile.user >> Dockerfile; fi
+
+if [ -z ${DSTOOLBOX_IMAGE}]
+then
+    if [ -f Dockerfile.from ] 
+    then 
+        cat Dockerfile.from > Dockerfile
+        tail -n +2 Dockerfile.in >> Dockerfile
+    else 
+        cat Dockerfile.in > Dockerfile
+    fi
+else
+    echo "FROM ${DSTOOLBOX_OWNER:sudachen}/${DSTOOLBOX_IMAGE}:${DSTOOLBOX_REVISION}" > Dockerfile
+    tail -n +2 Dockerfile.in >> Dockerfile
+fi
+
+if [ -f Dockerfile.user ]
+then 
+    cat Dockerfile.user >> Dockerfile
+fi
+
 docker-compose down
 docker-compose up --build -d
 docker container prune -f

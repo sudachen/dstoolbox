@@ -5,16 +5,18 @@ DSTOOLBOX_DOCKERFILE=${CONFIG_DIR}/Dockerfile
 DSTOOLBOX_DOCKERUSER=${CONFIG_DIR}/Dockerfile.user
 DSTOOLBOX_NBCONFIG=${CONFIG_DIR}/jupyter_notebook_config.py
 DSTOOLBOX_KSETUP=${CONFIG_DIR}/setup_kernel.py
+DSTOOLBOX_IMAGE=${IMAGE}
+DSTOOLBOX_OWBNER=${OWNER}
+DSTOOLBOX_REVISION=${REVISION}
 
 config:
 	if [ ! -d ${CONFIG_DIR} ]; then mkdir -p ${CONFIG_DIR}; fi
 	if [ ! -f ${DSTOOLBOX_YAML} ]; then cp docker-compose.in.yml ${DSTOOLBOX_YAML}; fi
-	echo "FROM ${OWNER}/${IMAGE}:${REVISION}" > ${DSTOOLBOX_DOCKERFILE}.in
-	tail -n +2 Dockerfile.in >> ${DSTOOLBOX_DOCKERFILE}.in
 	if [ ! -f ${DSTOOLBOX_DOCKERUSER} ]; \
 	   then if [ -f Dockerfile.user ]; then cp Dockerfile.user ${DSTOOLBOX_DOCKERUSER}; fi; fi
 	if [ ! -f ${DSTOOLBOX_NBCONFIG} ]; then cp jupyter_notebook_config.py ${DSTOOLBOX_NBCONFIG}; fi
 	if [ ! -f ${DSTOOLBOX_KSETUP} ]; then cp setup_kernel.py ${DSTOOLBOX_KSETUP}; fi
+	cp Dockerfile.in ${DSTOOLBOX_DOCKERFILE}.in
 	cp dst_up ${CONFIG_DIR}/up
 	cp dst_down ${CONFIG_DIR}/down
 
