@@ -19,9 +19,7 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     && pip install -U --no-cache-dir google-auth portpicker \
     && mkdir -p ${HOME}/content/datalab \
     && mkdir -p ${HOME}/.config/gcloud \
-    && ln -s ${HOME}/.config/gcloud ${HOME}/content/datalab/.config \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${GCLOUD_DIR}    
+    && ln -s ${HOME}/.config/gcloud ${HOME}/content/datalab/.config 
 
 ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     CLOUDSDK_PYTHON=$CONDA_DIR/envs/python27/bin/python2 \
@@ -39,9 +37,7 @@ RUN jupyter labextension install \
     && rm -rf ${HOME}/.cache/yarn \
     && rm -rf ${HOME}/.node-gyp \
     && conda clean -tipsy \
-    && npm cache clean --force \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+    && npm cache clean --force
 
 # Spark
 
@@ -78,6 +74,7 @@ RUN conda install -y \
         pymc \
         pyTables \
         pyspark \
+        'py4j==0.10.6' \
         sqlalchemy-redshift \
     && conda remove -y --force qt pyqt \
     \
@@ -87,26 +84,7 @@ RUN conda install -y \
         git+git://github.com/sudachen/ipython-sql@master \
         git+git://github.com/sudachen/PyDrive \
     \
-    && conda clean -tipsy \
-    && fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
-
-#ENV HADOOP_FULL_VERSION=2.7.2 \
-#    HADOOP_HOME=/opt/hadoop \
-#    HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop \
-#    PATH=$PATH:/opt/hadoop/bin
-#
-#USER root
-#RUN mkdir ${HADOOP_HOME} \
-#    && curl -sL --retry 3 \
-#    "http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_FULL_VERSION}/hadoop-${HADOOP_FULL_VERSION}.tar.gz" \
-#    | gunzip \
-#    | tar -x -C ${HADOOP_HOME} --strip-components=1 \
-#    && rm -rf ${HADOOP_HOME}/share/doc \
-#    && chown $NB_USER ${HADOOP_HOME} \
-#    && fix-permissions ${HADOOP_HOME}
-#
-#USER $NB_USER  
+    && conda clean -tipsy
 
 USER root
 RUN ln -s ${HOME}/work /Files

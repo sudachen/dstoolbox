@@ -18,6 +18,7 @@ RUN base=https://github.com/docker/machine/releases/download/v0.14.0 \
         iputils-ping \
         dnsutils \
 	joe \
+	zbar-tools \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
     && echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" >> /etc/apt/sources.list \
     && apt-get update \
@@ -25,7 +26,8 @@ RUN base=https://github.com/docker/machine/releases/download/v0.14.0 \
         docker-ce \
     && apt-get clean 
 
-
-    
-
-
+USER $NB_USER
+RUN pip install -U --no-cache-dir \
+    	pyotp \
+    \
+    && conda clean -tipsy 
