@@ -24,7 +24,8 @@ build:
 			fi; \
 		fi
 
-update: untag build
+update: untag 
+	$(MAKE) -f ../Makefile.docker $(TAGS_DIR)/${OWNER}+${IMAGE}+${REVISION}.${BASE_IMAGE}
 
 push:
 	docker push ${OWNER}/${IMAGE}:${REVISION} 

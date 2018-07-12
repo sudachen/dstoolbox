@@ -13,10 +13,12 @@ USER $NB_USER
 
 USER root
 RUN  echo export PS1=\"\#\ \" >> /root/.bashrc \
-     && echo export LS_COLORS=\'ow=01\;36\;40\' >> /root/.bashrc
+     && echo export LS_COLORS=\'ow=01\;36\;40\' >> /root/.bashrc \
+     && echo export 'PATH="/opt/conda/bin:$PATH"' >> /root/.bashrc
 
 USER $NB_USER
 RUN  echo export PS1=\"\$\ \" >> ${HOME}/.bashrc  \
-     && echo export LS_COLORS=\'ow=01\;36\;40\' >> ${HOME}/.bashrc
+     && echo export LS_COLORS=\'ow=01\;36\;40\' >> ${HOME}/.bashrc \
+     && echo export 'PATH="/opt/conda/bin:$PATH"' >> ${HOME}/.bashrc
 
 
