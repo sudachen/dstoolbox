@@ -13,22 +13,23 @@ RUN base=https://github.com/docker/machine/releases/download/v0.14.0 \
         gnupg2 \
         ssh \
         apt-transport-https \
-	    openvpn \
+        openvpn \
         net-tools \
         iputils-ping \
         dnsutils \
-	    joe \
-	    zbar-tools \
+        joe \
+        zbar-tools \
         curl \
-        file \
-    && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
-    && echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" >> /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        docker-ce \
-    && apt-get clean \
-    && curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose \
-    && chmod a+x /usr/local/bin/docker-compose
+        file 
+    && apt-get clean 
+
+#    && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+#    && echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" >> /etc/apt/sources.list \
+#    && apt-get update \
+#    && apt-get install -y --no-install-recommends \
+#        docker-ce \
+#    && curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose \
+#    && chmod a+x /usr/local/bin/docker-compose
 
 USER $NB_USER
 RUN pip install -U --no-cache-dir \

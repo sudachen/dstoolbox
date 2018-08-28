@@ -1,4 +1,4 @@
-export REVISION := 1.17
+export REVISION := 1.19
 export BASE_REVISION := $(REVISION)
 export OWNER := sudachen
 
@@ -17,9 +17,9 @@ jupy2r.Build: jupyter.Build
 jupy2r.Update: 
 	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
 
-toolkit.Build: jupy2r.Build
+julia.Build: jupy2r.Build
 	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
-toolkit.Update: 
+julia.Update: 
 	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
 
 %.Push:
@@ -38,7 +38,7 @@ toolkit.Update:
 build:  $(DEFAULT).Build
 update: $(BASE).retag $(DEFAULT).Update
 up:     $(DEFAULT).Up
-push:   $(DEFAULT).Push 
+push:   $(foreach img, $(ALL), $(img).Push) 
 pull:   $(foreach img, $(ALL), $(img).Pull)
 
 jupyter.retag:  
