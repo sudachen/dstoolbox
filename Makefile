@@ -1,4 +1,4 @@
-export REVISION := 1.19
+export REVISION := 1.20
 export BASE_REVISION := $(REVISION)
 export OWNER := sudachen
 
@@ -20,6 +20,11 @@ jupy2r.Update:
 julia.Build: jupy2r.Build
 	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
 julia.Update: 
+	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
+
+pypy.Build: jupy2r.Build
+	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
+pypy.Update: 
 	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
 
 %.Push:

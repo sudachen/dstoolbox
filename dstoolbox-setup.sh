@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=1.17
+VERSION=1.20
 IMAGE=sudachen/jupy2r:latest
 
 CONFIG_DIR=${HOME}/.dstoolbox
@@ -17,8 +17,6 @@ if [ -f ${CONFIG_DIR}/.version ]; then
     cd ${CONFIG_DIR} && \
     docker pull ${IMAGE} && \
     curl -s ${GITHUB_TOOLBOX}/Dockerfile.in -o Dockerfile.in && \
-    #curl -s ${GITHUB_TOOLBOX}/jupyter_notebook_config.py -o jupyter_notebook_config.py && \
-    #curl -s ${GITHUB_TOOLBOX}/setup_kernel.py -o setup_kernel.py && \
     curl -s ${GITHUB_TOOLBOX}/dst_up -o up && \
     curl -s ${GITHUB_TOOLBOX}/dst_down -o down && \
     chmod u+x up down && \

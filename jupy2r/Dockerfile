@@ -19,7 +19,8 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
  && pip install -U --no-cache-dir google-auth portpicker \
  && mkdir -p ${HOME}/content/datalab \
  && mkdir -p ${HOME}/.config/gcloud \
- && ln -s ${HOME}/.config/gcloud ${HOME}/content/datalab/.config 
+ && ln -s ${HOME}/.config/gcloud ${HOME}/content/datalab/.config \
+ && ln -s ${HOME}/.config/gcloud ${HOME}/content/.config 
 
 ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     CLOUDSDK_PYTHON=$CONDA_DIR/envs/python27/bin/python2 \
@@ -79,6 +80,16 @@ USER $NB_UID
 RUN jupyter labextension install @jupyterlab/github \
  && pip install --no-cache-dir jupyterlab_github \
  && jupyter serverextension enable --py jupyterlab_github 
+
+RUN jupyter labextension install jupyterlab-drawio
+
+#ENV JUPYTER_SCALA_HOME /opt/jupyter-scala
+#user root
+#RUN git clone https://github.com/jupyter-scala/jupyter-scala.git ${JUPYTER_SCALA_HOME} \
+# && chown $NB_USER -R ${JUPYTER_SCALA_HOME} 
+#user $NB_UID
+#RUN cd ${JUPYTER_SCALA_HOME} \
+# && bash ./jupyter-scala	
 
 # Git
 

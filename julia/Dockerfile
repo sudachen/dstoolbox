@@ -5,7 +5,7 @@ LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
 ENV JULIA_PKGDIR=/opt/julia \
     JULIA_RC=${HOME}/.juliarc.jl \
-    JULIA_VERSION=1.0.0 \
+    JULIA_VERSION=1.0.1 \
     JULIA_PKGDIR_VER=/opt/julia/v1.0 \ 
     JULIA_CACHE=/opt/julia/.cache 
 
@@ -29,8 +29,7 @@ RUN echo "@everywhere push!(Libdl.DL_LOAD_PATH, \"${CONDA_DIR}/envs/python27/lib
  && echo "@everywhere ENV[\"CONDA_DEFAULT_ENV\"]=\"python27\"" >> ${JULIA_RC} \
  && julia -e 'import Pkg; using Pkg; Pkg.update();' 
 
-RUN julia -e 'using Pkg; Pkg.add("Plots"); using Plots'
-RUN julia -e 'using Pkg; Pkg.add("Gadfly")'
+RUN julia -e 'using Pkg; Pkg.add("Plots")'
 RUN julia -e 'using Pkg; Pkg.add("PyCall")'
 RUN julia -e 'using Pkg; Pkg.add("IJulia")'
 RUN julia -e 'using Pkg; Pkg.add("HDF5")'
@@ -39,8 +38,14 @@ RUN julia -e 'using Pkg; Pkg.add("MySQL")'
 RUN julia -e 'using Pkg; Pkg.add("CSV")'
 RUN julia -e 'using Pkg; Pkg.add("SQLite")'
 
-RUN julia -e 'using Gadfly, PyCall, IJulia, HDF5'
+RUN julia -e 'using IJulia'
+RUN julia -e 'using PyCall'
+RUN julia -e 'using HDF5'
+RUN julia -e 'using Plots'
 RUN julia -e 'using LiibPQ, MySQL, CSV, SQLite'
+
+RUN julia -e 'using Pkg; Pkg.clone("https://github.com/GiovineItalia/Gadfly.jl.git","Gadfly")' \
+ && julia -e 'using Pkg; Pkg.build("Gadfly"); using Gadfly' 
 
 RUN conda install -y -n python27 \
        'scikit-learn=0.19*=*openblas*' \

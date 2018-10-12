@@ -10,6 +10,13 @@ ip.magic('config SqlMagic.autopandas = True')
 ip.run_cell('import matplotlib.pyplot as plt')
 ip.run_cell('import numpy as np')
 ip.run_cell('import pandas as pd')
+ip.run_cell('import sys, os, os.path')
+
+ip.run_cell('''
+for k, v in os.environ.items():
+    if k.endswith('_CONN'):
+       globals()[k.upper()] = v
+''')
 
 ip.run_cell('''
 from singleton_decorator import singleton

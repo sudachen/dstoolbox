@@ -1,7 +1,7 @@
 FROM debian:9-slim
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
-ENV FULLREBUILD 20180826
+ENV FULLREBUILD 20180921
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update --fix-missing \
  && apt-get install -qy --no-install-recommends \
@@ -156,12 +156,12 @@ RUN pip install -U --no-cache-dir \
         'requests>=2.18' \
         singleton_decorator
 
-RUN conda install -y 'jupyterlab>=0.34.*' \
+RUN conda install -y 'jupyterlab>=0.35.*' \
  && conda clean -tipsy 
 
 RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
  && jupyter labextension install \
-        @jupyter-widgets/jupyterlab-manager@^0.37 \
+        @jupyter-widgets/jupyterlab-manager@^0.38 \
         jupyterlab_bokeh \
  && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
  && rm -rf ${HOME}/.cache/yarn \
@@ -173,7 +173,7 @@ RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
 ENV XDG_CACHE_HOME ${HOME}/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" 
 
-RUN pip install --no-cache-dir jupyter_http_over_ws \
+RUN pip install --no-cache-dir git+https://github.com/googlecolab/jupyter_http_over_ws#egg=jupyter_http_over_ws \
  && jupyter serverextension enable --py jupyter_http_over_ws 
 
 # Python 2.7
@@ -234,11 +234,9 @@ RUN conda install -y \
         pydot \
         'networkx=2.*' \
         geopy \ 
-        tesseract \
  && conda clean -tipsy \
  && pip install --no-cache-dir \
         'rpy2==2.8.6' \
-        pytesseract \
         Wand 
 
 RUN fix-permissions ${CONDA_DIR} \
