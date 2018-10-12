@@ -2,7 +2,7 @@
 
 The set of tools based on JupyterLab.
 
-`jupyter` ~ base jupyter image with Python3, Python2, R and Julia.    
+`jupyter` ~ base jupyter image with Python3, Python2, R.    
 The docker hub image [sudachen/jupyter:latest](http://hub.docker.com/r/sudachen/jupyter)
 
 `jupy2r` ~ `jupyter` + extensions and patched packages.   
