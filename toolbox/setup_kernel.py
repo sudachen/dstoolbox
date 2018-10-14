@@ -24,3 +24,6 @@ warnings.filterwarnings("ignore",category=FutureWarning)
 
 if getattr(sys,'pypy_version_info',None) is None:
     ip.magic('matplotlib inline')
+else:
+    os.environ['PATH'] = '/opt/pypy/bin:'+os.environ['PATH']
+
