@@ -3,11 +3,9 @@ LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
 # Julia
 
-ENV JULIA_PKGDIR=/opt/julia \
-    JULIA_RC=${HOME}/.juliarc.jl \
-    JULIA_VERSION=1.0.1 \
-    JULIA_PKGDIR_VER=/opt/julia/v1.0 \ 
-    JULIA_CACHE=/opt/julia/.cache 
+ENV JULIA_BASE=/opt/julia \
+    JULIA_STARTUP=/opt/julia/etc/julia/startup.jl \
+    JULIA_VERSION=1.0.1 
 
 USER root
 

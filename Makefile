@@ -1,10 +1,10 @@
-export REVISION := 1.21
+export REVISION := 1.22
 export BASE_REVISION := $(REVISION)
 export OWNER := sudachen
 
 BASE = jupyter
-DEFAULT = jupy2r
-ALL = jupyter jupy2r
+DEFAULT = jupy3r
+ALL = jupyter jupy3r
 all: up
 
 jupyter.Build:
@@ -12,20 +12,14 @@ jupyter.Build:
 jupyter.Update:
 	IMAGE=$(basename $@) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
 
-jupy2r.Build: jupyter.Build
+jupy3r.Build: jupyter.Build
 	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
-jupy2r.Update: 
+jupy3r.Update: 
 	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
 
-julia.Build: jupy2r.Build
-	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
-julia.Update: 
-	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
-
-pypy.Build: jupy2r.Build
-	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
-pypy.Update: 
-	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
+jupy2r.Build: jupy3r.Build
+	docker tag ${OWNER}/jupy3r:latest ${OWNER}/jupy2r:latest 
+	docker tag ${OWNER}/jupy3r:${REVISION} ${OWNER}/jupy2r:${REVISION}
 
 %.Push:
 	docker push ${OWNER}/$(basename $@):${REVISION}
@@ -51,10 +45,10 @@ jupyter.retag:
 	docker tag ${OWNER}/jupyter:latest ${OWNER}/jupyter:${REVISION}
 	docker push ${OWNER}/jupyter:${REVISION}
 
-jupy2r.retag: jupyter.retag 
-	docker pull ${OWNER}/jupy2r:latest
-	docker tag ${OWNER}/jupy2r:latest ${OWNER}/jupy2r:${REVISION}
-	docker push ${OWNER}/jupy2r:${REVISION}
+jupy3r.retag: jupyter.retag 
+	docker pull ${OWNER}/jupy3r:latest
+	docker tag ${OWNER}/jupy3r:latest ${OWNER}/jupy3r:${REVISION}
+	docker push ${OWNER}/jupy3r:${REVISION}
 
 down: 
 	$(MAKE) -C toolbox -f $(PWD)/Makefile.up down

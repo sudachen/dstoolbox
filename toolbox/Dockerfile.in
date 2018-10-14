@@ -1,8 +1,7 @@
-FROM sudachen/jupy2r:latest
+FROM sudachen/jupy3r:latest
 
-#sudachen/jupyter:latest       - Python3, Python2, R 
-#sudachen/julia:latest         - jupyter + Julia
-#sudachen/jupy2r:latest        - julia + GDrive, DrawIO, ...
+#sudachen/jupyter:latest       - Conda Python3, PySpark, Colab, Google API 
+#sudachen/jupy3r:latest        - jupyter + PyPy3, Julia, Rust
 
 USER root
 ADD jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py

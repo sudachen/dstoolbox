@@ -161,6 +161,12 @@ RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
  && conda clean -tipsy \
  && npm cache clean --force 
 
+# GitHub
+
+RUN jupyter labextension install @jupyterlab/github \
+ && pip install --no-cache-dir jupyterlab_github \
+ && jupyter serverextension enable --py jupyterlab_github 
+
 # Import matplotlib the first time to build the font cache.
 ENV XDG_CACHE_HOME ${HOME}/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" 
@@ -168,61 +174,8 @@ RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot"
 RUN pip install --no-cache-dir git+https://github.com/googlecolab/jupyter_http_over_ws#egg=jupyter_http_over_ws \
  && jupyter serverextension enable --py jupyter_http_over_ws 
 
-
 RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \        
  && conda clean -tipsy 
-
-# Python 2.7
-
-RUN conda create -n python27 python=2.7 ipykernel \
- && conda install -n python27 -c conda-forge \
-       'blas=*=*openblas*' \
-       'numpy=1.14.*=*openblas*' \
-       'pandas=0.23.*' \
-       'ipywidgets=7.2.*' \
-       'matplotlib=2.2.*' \
-       'sqlalchemy=1.2.*' \
-       'ipython-sql=0.3.*' \
-       'libpq=9.6.*' \
-       'psycopg2=2.7.*' \
-       'pymysql=0.8.*' \
- && conda clean -tipsy 
-
-RUN ${CONDA_DIR}/envs/python27/bin/ipython2 kernel install --user \
- && mv ${HOME}/.local/share/jupyter/kernels/python2 ${CONDA_DIR}/share/jupyter/kernels/ \
- && chmod -R go+rx ${CONDA_DIR}/share/jupyter
-
-# R 3.4
-
-RUN conda install -n python27 -y \
-    'rpy2' \
-    'r-base' \
-    'r-irkernel' \
-    'r-plyr' \
-    'r-devtools' \
-    'r-tidyverse' \
-    'r-shiny' \
-    'r-rmarkdown' \
-    'r-forecast' \
-    'r-rsqlite' \
-    'r-rpostgresql' \
-    'r-reshape2' \
-    'r-nycflights13' \
-    'r-caret' \
-    'r-rcurl' \
-    'r-crayon' \
-    'r-randomforest' \
-    'r-htmltools' \
-    'r-sparklyr' \
-    'r-htmlwidgets' \
-    'r-hexbin' \
- && conda clean -tipsy 
-
-RUN mv ${CONDA_DIR}/envs/python27/share/jupyter/kernels/ir ${CONDA_DIR}/share/jupyter/kernels/ \
- && chmod -R go+rx ${CONDA_DIR}/share/jupyter
-
-ENV R_HOME=$CONDA_DIR/envs/python27/lib/R \
-    PATH=$PATH:$CONDA_DIR/envs/python27/lib/R/bin
 
 RUN conda install -y \
         graphviz \
@@ -232,11 +185,18 @@ RUN conda install -y \
         geopy \ 
  && conda clean -tipsy \
  && pip install --no-cache-dir \
-        'rpy2==2.8.6' \
         Wand 
 
-RUN fix-permissions ${CONDA_DIR} \
- && fix-permissions ${HOME}
+RUN conda create -n python27 python=2.7 \
+ && conda install -n python27 -c conda-forge \
+       'blas=*=*openblas*' \
+       'numpy=1.14.*=*openblas*' \
+       'pandas=0.23.*' \
+       'sqlalchemy=1.2.*' \
+       'libpq=9.6.*' \
+       'psycopg2=2.7.*' \
+       'pymysql=0.8.*' \
+ && conda clean -tipsy 
 
 USER root
 
@@ -271,3 +231,83 @@ ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "jupyter", "lab" ]
 
 USER $NB_UID
+
+ENV GCLOUD_DIR /opt/google_cloud
+
+USER root
+RUN mkdir ${GCLOUD_DIR} \
+ && chown ${NB_USER}:${NB_GID} ${GCLOUD_DIR} \
+ && fix-permissions ${GCLOUD_DIR} 
+
+USER $NB_USER    
+
+RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-202.0.0-linux-x86_64.tar.gz \
+    | gzip -d \
+    | tar x -C ${GCLOUD_DIR} --strip-components=1 \
+ && pip install -U --no-cache-dir google-auth portpicker \
+ && mkdir -p ${HOME}/content/datalab \
+ && mkdir -p ${HOME}/.config/gcloud \
+ && ln -s ${HOME}/.config/gcloud ${HOME}/content/datalab/.config \
+ && ln -s ${HOME}/.config/gcloud ${HOME}/content/.config 
+
+ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
+    CLOUDSDK_PYTHON=$CONDA_DIR/envs/python27/bin/python2 \
+    PATH=$PATH:$GCLOUD_DIR/bin \
+    DATALAB_ROOT=$HOME 
+
+# nvidia-docker 1.0
+LABEL com.nvidia.volumes.needed="nvidia_driver"
+LABEL com.nvidia.cuda.version="9.2"
+LABEL com.nvidia.cudnn.version="7.2"
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
+
+RUN conda install pytorch torchvision cuda92 -c pytorch && conda clean -tipsy
+
+# Spark
+
+ENV APACHE_SPARK_VERSION=2.3.1 \
+    HADOOP_VERSION=2.7 \
+    SPARK_HOME=/opt/spark \
+    PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.6-src.zip \
+    SPARK_XMX=2048M
+
+USER root
+
+RUN mkdir ${SPARK_HOME} \
+ && apt-get install --no-install-recommends -qy \
+        time \
+        openjdk-8-jre-headless \
+        ca-certificates-java \
+ && apt-get clean 
+
+RUN cd /tmp \
+ && wget http://apache.claz.org/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+ && tar xzf spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz -C ${SPARK_HOME} --strip-components=1 \
+ && rm spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+ && chown $NB_USER ${SPARK_HOME} \
+ && fix-permissions ${SPARK_HOME}
+
+USER $NB_USER  
+
+RUN conda install -y \
+        'py4j==0.10.7' \
+ && conda clean -tipsy
+
+RUN pip install -U --no-cache-dir pyspark \
+ && pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
+
+ENV SPARK_OPTS=\
+        --driver-java-options=-Xms1024M \
+        --driver-java-options=-Xmx$SPARK_XMX \
+        --driver-java-options=-Dlog4j.logLevel=info
+
+RUN pip install -U --no-cache-dir \
+        python-Levenshtein \
+        git+git://github.com/sudachen/colabtools \
+        git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
+        git+git://github.com/sudachen/ipython-sql \
+        git+git://github.com/sudachen/PyDrive 
+
