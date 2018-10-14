@@ -1,7 +1,7 @@
 FROM debian:9-slim
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
-ENV FULLREBUILD 20180921
+ENV FULLREBUILD 20181012
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update --fix-missing \
  && apt-get install -qy --no-install-recommends \
@@ -36,10 +36,11 @@ RUN apt-get update --fix-missing \
     libreadline-dev \
     spatialite-bin \
     libgtk2.0-0 \
+    libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/* \
  && localedef -i en_US -c -f UTF-8 en_US.UTF-8
 
-ENV CONDA_VERSION=4.5.1 \
+ENV CONDA_VERSION=4.5.11 \
     TINI_VERSION=0.16.1 \
     CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
@@ -69,48 +70,39 @@ RUN mkdir ${HOME}/work \
  && wget https://repo.continuum.io/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -O ${HOME}/miniconda.sh \
  && ${SHELL} ${HOME}/miniconda.sh -f -b -p ${CONDA_DIR} \
  && rm ${HOME}/miniconda.sh \
- && conda config --system --prepend channels conda-forge \
- && conda config --system --set auto_update_conda false \
+ && conda config --system --append channels conda-forge \
+ #&& conda config --system --prepend channels intel \
  && conda config --system --set show_channel_urls true \
+ && conda install 'python=3.6.6' \
  && conda update --all -y \
- && conda install -y 'pip>=18.*' \
  && conda clean -tipsy \
  && rm -rf ${HOME}/.cache/yarn \
  && echo ". ${CONDA_DIR}/etc/profile.d/conda.sh" >> ${HOME}/.bashrc \
  && echo "conda activate base" >> ${HOME}/.bashrc 
 
 RUN conda install -y \
-       'notebook>=5.5.*' \
-       'blas=1.1=*openblas*' \
-       'numpy=1.14.*=*openblas*' \
+       'numpy' \
+       'pandas' \
+       'scipy' \
+       'scikit-learn' \
+       'sympy' \
+       'matplotlib' \
+       'notebook>=5.5' \
        'bokeh>=0.12' \
        'cython>=0.28' \
-       'pandas>=0.23' \
-       'scipy>=1.1=*openblas*' \
-       'scikit-learn>=0.19=*openblas*' \
-       'sympy>=1.1' \
        'statsmodels>=0.9' \
- && conda clean -tipsy 
-
-RUN conda install -y \
        'icu=58.2*' \
-       'hdf5>=1.10.1' \
+       'hdf5' \
        'libxml2>=2.9' \
-       'h5py>=2.7' \
- && conda clean -tipsy 
-
-RUN conda install -y \
-       'matplotlib>=2.2' \
-       'ipywidgets>=7.2' \
-       'seaborn>=0.8' \
+       'h5py' \
+        ipywidgets \
+        seaborn \
         ipyleaflet  \
         openpyxl \
         geopandas \
         folium \
         rtree \
- && conda install -y -c https://conda.anaconda.org/menpo opencv3 \        
- && conda remove -y --force qt pyqt \
- && conda clean -tipsy 
+  && conda clean -tipsy 
 
 RUN conda install -y \
        'cloudpickle=0.5*' \
@@ -130,7 +122,6 @@ RUN conda install -y \
         pytables \
         xlrd \
         nodejs \
-        keras \
         numba \
         pexpect \
         scrapy \
@@ -139,8 +130,9 @@ RUN conda install -y \
         line_profiler \
         pymc \
         sqlalchemy-redshift \
- && conda remove -y --force qt pyqt \
  && conda clean -tipsy 
+
+RUN pip install -U --no-cache-dir pip
 
 RUN pip install -U --no-cache-dir \
         pyotp \
@@ -175,6 +167,10 @@ RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot"
 
 RUN pip install --no-cache-dir git+https://github.com/googlecolab/jupyter_http_over_ws#egg=jupyter_http_over_ws \
  && jupyter serverextension enable --py jupyter_http_over_ws 
+
+
+RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \        
+ && conda clean -tipsy 
 
 # Python 2.7
 

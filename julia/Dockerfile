@@ -42,7 +42,7 @@ RUN julia -e 'using IJulia'
 RUN julia -e 'using PyCall'
 RUN julia -e 'using HDF5'
 RUN julia -e 'using Plots'
-RUN julia -e 'using LiibPQ, MySQL, CSV, SQLite'
+RUN julia -e 'using LibPQ, MySQL, CSV, SQLite'
 
 RUN julia -e 'using Pkg; Pkg.clone("https://github.com/GiovineItalia/Gadfly.jl.git","Gadfly")' \
  && julia -e 'using Pkg; Pkg.build("Gadfly"); using Gadfly' 

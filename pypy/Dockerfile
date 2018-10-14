@@ -1,6 +1,8 @@
 FROM sudachen/jupy2r:latest
 
-ENV PYTHON_PIP_VERSION 18.1
+ENV BLAS /usr/lib/libopenblas.a 
+ENV LAPACK /usr/lib/libopenblas.a 
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/opt/conda/lib 
 
 USER root
 
@@ -10,6 +12,7 @@ RUN  apt-get install -y --no-install-recommends \
 		gfortran \
 		libfreetype6-dev \
 		pkg-config \
+		libopenblas-dev \
 &&   apt-get clean
 
 RUN set -ex \
@@ -25,21 +28,18 @@ RUN set -ex \
 &&  pypy3 get-pip.py \
 		--disable-pip-version-check \
 		--no-cache-dir \
-		"pip==$PYTHON_PIP_VERSION" \
 &&  ln -s /opt/pypy/bin/pip /usr/local/bin/pipy3 \
 &&  rm get-pip.py
 
+RUN chown -R $NB_USER /opt/pypy && fix-permissions /opt/pypy/
+USER $NB_USER
+
 RUN pipy3 install --no-cache-dir requests selenium numpy matplotlib pytest ipython jupyter pandas Pillow 
 RUN pipy3 install --no-cache-dir Cython
-
-ENV BLAS /opt/conda/lib/libopenblas.a 
-ENV LAPACK /opt/conda/lib/libopenblas.a 
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/opt/conda/lib 
-
-#RUN git clone https://github.com/scipy/scipy \
-#&& pypy3 setup.py build \
-#&& pypy3 setup.py install
-
 RUN pipy3 install --no-cache-dir scipy scikit-learn scikit-image
+RUN pipy3 install --no-cache-dir pydrive psycopg2 pymysql sqlalchemy ipython-sql
+RUN pipy3 install --no-cache-dir google-api-python-client oauth2client pexpect pyotp
+RUN pipy3 install --no-cache-dir scrapy ipywidgets sqlalchemy-redshift
+RUN pipy3 install --no-cache-dir pystan fbprophet
 
-USER $NB_USER
+RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
