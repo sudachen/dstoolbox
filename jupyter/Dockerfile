@@ -77,11 +77,13 @@ RUN mkdir ${HOME}/work \
  && conda update --all -y \
  && conda clean -tipsy \
  && rm -rf ${HOME}/.cache/yarn \
- && echo ". ${CONDA_DIR}/etc/profile.d/conda.sh" >> ${HOME}/.bashrc \
- && echo "conda activate base" >> ${HOME}/.bashrc 
+ && echo ". ${CONDA_DIR}/etc/profile.d/conda.sh" >> ${HOME}/.bashrc 
+ #&& echo "conda activate base" >> ${HOME}/.bashrc 
 
 RUN conda install -y \
-       'numpy' \
+       'numpy=1.14.6' \
+       'xarray<=0.10.7' \
+       altair \
        'pandas' \
        'scipy' \
        'scikit-learn' \
@@ -125,10 +127,8 @@ RUN conda install -y \
         numba \
         pexpect \
         scrapy \
-        fbprophet \
         geopy \
         line_profiler \
-        pymc \
         sqlalchemy-redshift \
  && conda clean -tipsy 
 
@@ -148,34 +148,16 @@ RUN pip install -U --no-cache-dir \
         'requests>=2.18' \
         singleton_decorator
 
-RUN conda install -y 'jupyterlab>=0.35.*' \
- && conda clean -tipsy 
-
-RUN jupyter nbextension enable --py widgetsnbextension --sys-prefix \
- && jupyter labextension install \
-        @jupyter-widgets/jupyterlab-manager@^0.38 \
-        jupyterlab_bokeh \
- && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
- && rm -rf ${HOME}/.cache/yarn \
- && rm -rf ${HOME}/.node-gyp \
- && conda clean -tipsy \
- && npm cache clean --force 
-
-# GitHub
-
-RUN jupyter labextension install @jupyterlab/github \
- && pip install --no-cache-dir jupyterlab_github \
- && jupyter serverextension enable --py jupyterlab_github 
-
 # Import matplotlib the first time to build the font cache.
 ENV XDG_CACHE_HOME ${HOME}/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" 
 
-RUN pip install --no-cache-dir git+https://github.com/googlecolab/jupyter_http_over_ws#egg=jupyter_http_over_ws \
- && jupyter serverextension enable --py jupyter_http_over_ws 
+# OpenCV
 
 RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \        
  && conda clean -tipsy 
+
+# PyDOT
 
 RUN conda install -y \
         graphviz \
@@ -183,9 +165,9 @@ RUN conda install -y \
         pydot \
         'networkx=2.*' \
         geopy \ 
- && conda clean -tipsy \
- && pip install --no-cache-dir \
-        Wand 
+ && conda clean -tipsy 
+
+# Python 2.7
 
 RUN conda create -n python27 python=2.7 \
  && conda install -n python27 -c conda-forge \
@@ -197,6 +179,8 @@ RUN conda create -n python27 python=2.7 \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
  && conda clean -tipsy 
+
+# Utils
 
 USER root
 
@@ -217,6 +201,10 @@ RUN bash -c "for i in {1..9}; do mkdir -p /usr/share/man/man\$i; done" \
         zbar-tools \
         curl \
         file \
+        mesa-opencl-icd ocl-icd-opencl-dev opencl-headers \
+        clinfo \
+        libclblas-dev \
+        time \
  && apt-get clean 
 
 ADD tini-${TINI_VERSION} /usr/bin/tini
@@ -225,16 +213,37 @@ RUN chmod +x /usr/bin/tini \
  && echo "jupyter ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/notebook \
  && fix-permissions /etc/jupyter/
 
+USER $NB_UID
+
+# JupyterLab
+
+RUN pip install -U --no-cache-dir 'jupyterlab>=0.35.*' \
+ && jupyter nbextension enable --py widgetsnbextension --sys-prefix \
+ && jupyter labextension install \
+        @jupyter-widgets/jupyterlab-manager@^0.38 \
+        jupyterlab_bokeh \
+ && jupyter labextension install @jupyterlab/github \
+ && pip install --no-cache-dir jupyterlab_github \
+ && jupyter serverextension enable --py jupyterlab_github \
+ && pip install --no-cache-dir git+https://github.com/googlecolab/jupyter_http_over_ws#egg=jupyter_http_over_ws \
+ && jupyter serverextension enable --py jupyter_http_over_ws \
+ && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+ && rm -rf ${HOME}/.cache/yarn \
+ && rm -rf ${HOME}/.node-gyp \
+ && conda clean -tipsy \
+ && npm cache clean --force 
+
 EXPOSE 8888
 WORKDIR $HOME
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "jupyter", "lab" ]
 
-USER $NB_UID
+# COLAB
 
 ENV GCLOUD_DIR /opt/google_cloud
 
 USER root
+
 RUN mkdir ${GCLOUD_DIR} \
  && chown ${NB_USER}:${NB_GID} ${GCLOUD_DIR} \
  && fix-permissions ${GCLOUD_DIR} 
@@ -255,59 +264,40 @@ ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     PATH=$PATH:$GCLOUD_DIR/bin \
     DATALAB_ROOT=$HOME 
 
-# nvidia-docker 1.0
+# NVIDIA/PyTorch
+
 LABEL com.nvidia.volumes.needed="nvidia_driver"
 LABEL com.nvidia.cuda.version="9.2"
 LABEL com.nvidia.cudnn.version="7.2"
-# nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
 
 RUN conda install pytorch torchvision cuda92 -c pytorch && conda clean -tipsy
 
-# Spark
-
-ENV APACHE_SPARK_VERSION=2.3.1 \
-    HADOOP_VERSION=2.7 \
-    SPARK_HOME=/opt/spark \
-    PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.6-src.zip \
-    SPARK_XMX=2048M
+# Other 
 
 USER root
 
-RUN mkdir ${SPARK_HOME} \
- && apt-get install --no-install-recommends -qy \
-        time \
-        openjdk-8-jre-headless \
-        ca-certificates-java \
- && apt-get clean 
+RUN apt-get install -y --no-install-recommends \
+        swig \
+ && apt-get clean
 
-RUN cd /tmp \
- && wget http://apache.claz.org/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
- && tar xzf spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz -C ${SPARK_HOME} --strip-components=1 \
- && rm spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
- && chown $NB_USER ${SPARK_HOME} \
- && fix-permissions ${SPARK_HOME}
-
-USER $NB_USER  
-
-RUN conda install -y \
-        'py4j==0.10.7' \
- && conda clean -tipsy
-
-RUN pip install -U --no-cache-dir pyspark \
- && pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
-
-ENV SPARK_OPTS=\
-        --driver-java-options=-Xms1024M \
-        --driver-java-options=-Xmx$SPARK_XMX \
-        --driver-java-options=-Dlog4j.logLevel=info
+USER $NB_USER    
 
 RUN pip install -U --no-cache-dir \
+        pybind11 \
+        pyopencl \
+        pyclblas \
         python-Levenshtein \
-        git+git://github.com/sudachen/colabtools \
+        pymc \
+        pystan \
+        fbprophet \
+        vega_datasets \
+        pydataset \
+        Wand \
+        git+https://github.com/sudachen/colabtools \
+        git+https://github.com/sudachen/PyDrive \
         git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
-        git+git://github.com/sudachen/ipython-sql \
-        git+git://github.com/sudachen/PyDrive 
+        git+https://github.com/sudachen/ipython-sql 
 

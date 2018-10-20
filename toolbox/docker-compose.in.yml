@@ -1,18 +1,81 @@
-version: '3'
+version: '2.4'
 services:
-  jupyterlab:
+  db:
+    build:
+      context: .
+      dockerfile: mysql.Dockerfile
+    container_name: db
+    restart: always
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ${HOME}/.jupyter/MySql:/var/lib/mysql:Z
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_DATABASE: jupyter
+      MYSQL_USER: jupyter
+      MYSQL_PASSWORD: jupyter
+    networks:
+      - local_net
+    command: --character-set-server=utf8mb4
+
+  pg:
+    build:
+      context: .
+      dockerfile: postgres.Dockerfile
+    container_name: pg
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ${HOME}/.jupyter/PgSql:/var/lib/postgresql/data:Z
+    environment:
+      POSTGRES_DB: jupyter
+      POSTGRES_USER: jupyter
+      POSTGRES_PASSWORD: jupyter
+    networks:
+      - local_net
+
+  lab:
     build: .
+    depends_on:
+      - db
+      - pg
+    container_name: lab
     restart: always
     ports:
       - "127.0.0.1:8888:8888"
+      - "127.0.0.1:5000:5000"
     volumes:
-      - ${HOME}/work:/home/jupyter/work
+      - ${HOME}/.ssh:/home/jupyter/.ssh
+      - ${HOME}/Work:/home/jupyter/work/Work:Z
+      - ${HOME}/Projects:/home/jupyter/work/Projects
+      - ${HOME}/.jupyter/gcloud:/home/jupyter/.config/gcloud:Z
     environment:
-      DATABASE_URL: sqlite://
-      GITHUB_ACCESS_TOKEN: NONE
+      PYPY_GC_MAX: 3GB
+      PYPY_GC_MAJOR_COLLECT: 1.2
+      SHELL: /bin/bash
+      DB_CONN: mysql+pymysql://jupyter:jupyter@db:3306/jupyter?charset=utf8
+      PG_CONN: postgresql+psycopg2://jupyter:jupyter@pg:5432/jupyter
+      DATABASE_URL: postgresql+psycopg2://_:_@_.services/db
+      GITHUB_ACCESS_TOKEN: None
+      redshift_db_user: _
+      redshift_db_pass: _
+      redshift_db_host: _
+    links:
+      - db:db
+      - pg:pg
+    networks:
+      - local_net
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+      - /dev/dri:/dev/dri
+    dns:
+      - 8.8.8.8
 
-# Default connection for %%sql magic
-# redshift   -> DATABASE_URL: postgresql+psycopg2://username:password@host:5439/databasae
-# mysql      -> DATABASE_URL: mysql+pymysql://username:password@host:3306/database
-# mem/sqlite -> DATABASE_URL: sqlite://
+networks:
+  local_net:
+    driver: bridge
 

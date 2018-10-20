@@ -113,4 +113,10 @@ RUN cargo install evcxr_jupyter \
 
 COPY logo-32x32.png logo-64x64.png $HOME/.local/share/jupyter/kernels/pypy6-3.5/
 
+#USER root
+#
+#RUN apt install -y  --no-install-recommends \
+# && apt-get clean 
+
+USER $NB_USER
 

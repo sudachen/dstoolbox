@@ -1,0 +1,39 @@
+#!/bin/bash
+CONFIG_DIR=${HOME}/.dstoolbox
+cd ${CONFIG_DIR}
+
+if [ -z ${DSTOOLBOX_IMAGE}]
+then
+    if [ -z $1 ]
+    then
+        if [ -f Dockerfile.from ] 
+        then 
+            cat Dockerfile.from > Dockerfile
+            tail -n +2 Dockerfile.in >> Dockerfile
+        else 
+            cat Dockerfile.in > Dockerfile
+        fi
+    else
+        echo "FROM ${DSTOOLBOX_OWNER:-sudachen}/$1:latest" > Dockerfile
+        tail -n +2 Dockerfile.in >> Dockerfile
+    fi
+else
+    echo "FROM ${DSTOOLBOX_OWNER:-sudachen}/${DSTOOLBOX_IMAGE}:${DSTOOLBOX_REVISION}" > Dockerfile
+    tail -n +2 Dockerfile.in >> Dockerfile
+fi
+
+if [ -f Dockerfile.user ]
+then 
+    cat Dockerfile.user >> Dockerfile
+fi
+
+docker-compose down
+
+mkdir -p ${HOME}/.jupyter
+mkdir -p ${HOME}/.jupyter/gcloud
+mkdir -p ${HOME}/.jupyter/MySql
+mkdir -p ${HOME}/.jupyter/PgSql
+
+docker-compose up --build -d
+docker container prune -f
+docker image prune -f

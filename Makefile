@@ -1,4 +1,4 @@
-export REVISION := 1.22
+export REVISION := 1.23
 export BASE_REVISION := $(REVISION)
 export OWNER := sudachen
 
@@ -15,6 +15,11 @@ jupyter.Update:
 jupy3r.Build: jupyter.Build
 	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
 jupy3r.Update: 
+	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
+
+spark.Build: jupy3r.Build
+	IMAGE=$(basename $@) BASE_IMAGE=$(basename $<) $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker build
+spark.Update: 
 	IMAGE=$(basename $@) BASE_IMAGE= BASE_REVISION=latest $(MAKE) -C $(basename $@) -f $(PWD)/Makefile.docker update
 
 jupy2r.Build: jupy3r.Build
