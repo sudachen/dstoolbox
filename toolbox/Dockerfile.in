@@ -24,3 +24,5 @@ RUN  echo export PS1=\"\$\ \" >> ${HOME}/.bashrc  \
      && echo export 'PATH="/opt/conda/bin:$PATH"' >> ${HOME}/.bashrc
 
 WORKDIR $HOME/work
+
+ENV LD_PRELOAD=$LD_PRELOAD:/opt/conda/lib/libjemalloc.so

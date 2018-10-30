@@ -1,0 +1,17 @@
+:include /etc/joe/joerc
+ 
+-nobackups
+-mouse
+-exask
+
+:main
+undo ^U
+redo ^R
+save ^S
+exsave ^X
+blkcpy ^V
+blksave ^W
+ffirst ^F
+nbuf ^/
+
+ 

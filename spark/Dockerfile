@@ -1,4 +1,4 @@
-FROM sudachen/jupy3r:latest
+FROM sudachen/jupyter:latest
 
 # Spark
 

@@ -4,7 +4,7 @@ export OWNER := sudachen
 
 BASE = jupyter
 DEFAULT = jupy3r
-ALL = jupyter jupy3r
+ALL = jupyter jupy3r spark
 all: up
 
 jupyter.Build:

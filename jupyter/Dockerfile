@@ -37,6 +37,7 @@ RUN apt-get update --fix-missing \
     spatialite-bin \
     libgtk2.0-0 \
     libfreetype6-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/* \
  && localedef -i en_US -c -f UTF-8 en_US.UTF-8
 
@@ -64,10 +65,10 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
  && fix-permissions ${HOME} \
  && fix-permissions ${CONDA_DIR}
 
-USER $NB_UID
+USER $NB_USER
 
 RUN mkdir ${HOME}/work \
- && wget https://repo.continuum.io/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -O ${HOME}/miniconda.sh \
+ && curl -L https://repo.continuum.io/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -o ${HOME}/miniconda.sh \
  && ${SHELL} ${HOME}/miniconda.sh -f -b -p ${CONDA_DIR} \
  && rm ${HOME}/miniconda.sh \
  && conda config --system --append channels conda-forge \
@@ -83,7 +84,6 @@ RUN mkdir ${HOME}/work \
 RUN conda install -y \
        'numpy=1.14.6' \
        'xarray<=0.10.7' \
-       altair \
        'pandas' \
        'scipy' \
        'scikit-learn' \
@@ -116,6 +116,7 @@ RUN conda install -y \
        psycopg2 \
        pymysql \
        'pyarrow>=0.9' \
+       jemalloc \
        'sqlalchemy>=1.2.8' \
        'ipython-sql>=0.3' \
  && conda clean -tipsy 
@@ -213,7 +214,7 @@ RUN chmod +x /usr/bin/tini \
  && echo "jupyter ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/notebook \
  && fix-permissions /etc/jupyter/
 
-USER $NB_UID
+USER $NB_USER
 
 # JupyterLab
 
@@ -237,6 +238,108 @@ EXPOSE 8888
 WORKDIR $HOME
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "jupyter", "lab" ]
+
+# NVIDIA/PyTorch
+
+LABEL com.nvidia.volumes.needed="nvidia_driver"
+LABEL com.nvidia.cuda.version="9.2"
+LABEL com.nvidia.cudnn.version="7.2"
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
+
+RUN conda install pytorch torchvision cuda92 -c pytorch && conda clean -tipsy
+
+USER root
+
+RUN  apt-get install -y --no-install-recommends \
+        libatlas-base-dev \
+        tcl \
+        tk \
+        gfortran \
+        libfreetype6-dev \
+        pkg-config \
+        libopenblas-dev \
+        swig \
+        p7zip-full \
+        openjdk-8-jre-headless \
+        ca-certificates-java \
+&&   apt-get clean
+
+#PyPy6 3.5
+
+USER root
+
+RUN  mkdir /opt/pypy \
+&&  ln -s /opt/pypy/bin/pypy3 /usr/local/bin \
+&&  ln -s /opt/pypy/bin/pip /usr/local/bin/pipy3 \
+&& chown -R $NB_USER /opt/pypy \
+&& fix-permissions /opt/pypy/
+
+USER $NB_USER
+
+ENV PYPY_GC_MAX: 1.99GB
+ENV PYPY_GC_MAJOR_COLLECT: 1.2
+
+# RUN wget -O pypy.tar.bz2 https://bitbucket.org/squeaky/portable-pypy/downloads/pypy3.5-6.0.0-linux_x86_64-portable.tar.bz2 \
+# &&  tar -xjC /opt/pypy --strip-components=1 -f pypy.tar.bz2 \
+# &&  find /opt/pypy/lib-python -depth -type d -a \( -name test -o -name tests \) -exec rm -rf '{}' + \
+# &&  rm pypy.tar.bz2 
+
+# RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
+# &&  pypy3 get-pip.py \
+# 		--disable-pip-version-check \
+# 		--no-cache-dir \
+# &&  rm get-pip.py
+
+#RUN BLAS=/usr/lib/libopenblas.a LAPACK=/usr/lib/libopenblas.a \
+#    pipy3 install --no-cache-dir \
+#        requests selenium \
+#        pytest ipython jupyter \
+#         numpy matplotlib pandas Pillow \ 
+#         Cython scipy scikit-learn scikit-image \
+#         pydrive psycopg2 pymysql sqlalchemy \
+#         google-api-python-client oauth2client pexpect pyotp \
+#         scrapy ipywidgets sqlalchemy-redshift \
+#         pystan fbprophet 
+
+# RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
+
+# RUN pipy3 install -U --no-cache-dir \
+#         python-Levenshtein \
+#         git+git://github.com/sudachen/colabtools \
+#         git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
+#         git+git://github.com/sudachen/ipython-sql \
+#         git+git://github.com/sudachen/PyDrive 
+
+RUN curl -o /tmp/pypy.7z -L https://github.com/sudachen/dstoolbox/releases/download/1.23/pypy-3.5.7z \
+ &&  cd / && 7z x /tmp/pypy.7z \
+ &&  rm /tmp/pypy.7z 
+
+RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
+COPY logo-32x32.png logo-64x64.png $HOME/.local/share/jupyter/kernels/pypy6-3.5/
+
+# Other 
+
+USER $NB_USER    
+
+RUN pip install -U --no-cache-dir \
+        py4j \
+        pythran \
+        pybind11 \
+        pyopencl \
+        pyclblas \
+        python-Levenshtein \
+        pymc \
+        pystan \
+        fbprophet \
+        vega_datasets \
+        pydataset \
+        Wand \
+        git+https://github.com/sudachen/colabtools \
+        git+https://github.com/sudachen/PyDrive \
+        git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
+        git+https://github.com/sudachen/ipython-sql 
 
 # COLAB
 
@@ -264,40 +367,51 @@ ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     PATH=$PATH:$GCLOUD_DIR/bin \
     DATALAB_ROOT=$HOME 
 
-# NVIDIA/PyTorch
+# Spark
 
-LABEL com.nvidia.volumes.needed="nvidia_driver"
-LABEL com.nvidia.cuda.version="9.2"
-LABEL com.nvidia.cudnn.version="7.2"
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
+# ENV APACHE_SPARK_VERSION=2.3.1 \
+#     HADOOP_VERSION=2.7 \
+#     SPARK_HOME=/opt/spark \
+#     PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.6-src.zip \
+#     SPARK_XMX=2048M
 
-RUN conda install pytorch torchvision cuda92 -c pytorch && conda clean -tipsy
+# ENV SPARK_OPTS=\
+#         --driver-java-options=-Xms1024M \
+#         --driver-java-options=-Xmx$SPARK_XMX \
+#         --driver-java-options=-Dlog4j.logLevel=info
 
-# Other 
+# USER root
 
-USER root
+# RUN cd /tmp \
+#  && mkdir ${SPARK_HOME} \
+#  && wget http://apache.claz.org/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+#  && tar xzf spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz -C ${SPARK_HOME} --strip-components=1 \
+#  && rm spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
+#  && chown $NB_USER ${SPARK_HOME} \
+#  && fix-permissions ${SPARK_HOME}
 
-RUN apt-get install -y --no-install-recommends \
-        swig \
- && apt-get clean
+# USER $NB_USER  
 
-USER $NB_USER    
+# RUN pip install -U --no-cache-dir pyspark \
+#  && pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
 
-RUN pip install -U --no-cache-dir \
-        pybind11 \
-        pyopencl \
-        pyclblas \
-        python-Levenshtein \
-        pymc \
-        pystan \
-        fbprophet \
-        vega_datasets \
-        pydataset \
-        Wand \
-        git+https://github.com/sudachen/colabtools \
-        git+https://github.com/sudachen/PyDrive \
-        git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
-        git+https://github.com/sudachen/ipython-sql 
+RUN pip install -U --no-cache-dir jupyterlab-git \
+ && jupyter serverextension enable --py jupyterlab_git \
+ && jupyter labextension install \
+#       @jupyterlab/git \
+        @jupyterlab/mp4-extension \
+        @jupyterlab/google-drive \
+ && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+ && rm -rf ${HOME}/.cache/yarn \
+ && rm -rf ${HOME}/.node-gyp \
+ && conda clean -tipsy \
+ && npm cache clean --force 
 
+RUN conda install -y \
+        xtensor-python \
+ && conda clean -tipsy 
+
+RUN  jupyter labextension install \
+       @jupyterlab/git \
+ && conda clean -tipsy \
+ && npm cache clean --force 
