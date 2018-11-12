@@ -1,7 +1,7 @@
 FROM debian:9-slim
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
-ENV FULLREBUILD 20181012
+ENV FULLREBUILD 20181110
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update --fix-missing \
  && apt-get install -qy --no-install-recommends \
@@ -78,6 +78,7 @@ RUN mkdir ${HOME}/work \
  && conda update --all -y \
  && conda clean -tipsy \
  && rm -rf ${HOME}/.cache/yarn \
+ && rm -rf ${CONDA_DIR}/pkgs/* \
  && echo ". ${CONDA_DIR}/etc/profile.d/conda.sh" >> ${HOME}/.bashrc 
  #&& echo "conda activate base" >> ${HOME}/.bashrc 
 
@@ -104,7 +105,8 @@ RUN conda install -y \
         geopandas \
         folium \
         rtree \
-  && conda clean -tipsy 
+  && conda clean -tipsy \
+  && rm -rf ${CONDA_DIR}/pkgs/*
 
 RUN conda install -y \
        'cloudpickle=0.5*' \
@@ -119,7 +121,8 @@ RUN conda install -y \
        jemalloc \
        'sqlalchemy>=1.2.8' \
        'ipython-sql>=0.3' \
- && conda clean -tipsy 
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/* 
 
 RUN conda install -y \
         pytables \
@@ -131,7 +134,8 @@ RUN conda install -y \
         geopy \
         line_profiler \
         sqlalchemy-redshift \
- && conda clean -tipsy 
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/*
 
 RUN pip install -U --no-cache-dir pip
 
@@ -156,7 +160,8 @@ RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot"
 # OpenCV
 
 RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \        
- && conda clean -tipsy 
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/* 
 
 # PyDOT
 
@@ -166,7 +171,8 @@ RUN conda install -y \
         pydot \
         'networkx=2.*' \
         geopy \ 
- && conda clean -tipsy 
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/*
 
 # Python 2.7
 
@@ -179,7 +185,8 @@ RUN conda create -n python27 python=2.7 \
        'libpq=9.6.*' \
        'psycopg2=2.7.*' \
        'pymysql=0.8.*' \
- && conda clean -tipsy 
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/*
 
 # Utils
 
@@ -208,12 +215,6 @@ RUN bash -c "for i in {1..9}; do mkdir -p /usr/share/man/man\$i; done" \
         time \
  && apt-get clean 
 
-ADD tini-${TINI_VERSION} /usr/bin/tini
-ADD jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py
-RUN chmod +x /usr/bin/tini \
- && echo "jupyter ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/notebook \
- && fix-permissions /etc/jupyter/
-
 USER $NB_USER
 
 # JupyterLab
@@ -232,7 +233,8 @@ RUN pip install -U --no-cache-dir 'jupyterlab>=0.35.*' \
  && rm -rf ${HOME}/.cache/yarn \
  && rm -rf ${HOME}/.node-gyp \
  && conda clean -tipsy \
- && npm cache clean --force 
+ && npm cache clean --force \
+ && rm -rf ${CONDA_DIR}/pkgs/* 
 
 EXPOSE 8888
 WORKDIR $HOME
@@ -248,7 +250,9 @@ ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
 
-RUN conda install pytorch torchvision cuda92 -c pytorch && conda clean -tipsy
+RUN conda install pytorch torchvision cuda92 -c pytorch \
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/*
 
 USER root
 
@@ -270,11 +274,11 @@ RUN  apt-get install -y --no-install-recommends \
 
 USER root
 
-RUN  mkdir /opt/pypy \
-&&  ln -s /opt/pypy/bin/pypy3 /usr/local/bin \
-&&  ln -s /opt/pypy/bin/pip /usr/local/bin/pipy3 \
-&& chown -R $NB_USER /opt/pypy \
-&& fix-permissions /opt/pypy/
+RUN mkdir /opt/pypy \
+ && ln -s /opt/pypy/bin/pypy3 /usr/local/bin \
+ && ln -s /opt/pypy/bin/pip /usr/local/bin/pipy3 \
+ && chown -R $NB_USER /opt/pypy \
+ && fix-permissions /opt/pypy/
 
 USER $NB_USER
 
@@ -367,6 +371,28 @@ ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
     PATH=$PATH:$GCLOUD_DIR/bin \
     DATALAB_ROOT=$HOME 
 
+RUN pip install -U --no-cache-dir jupyterlab-git \
+ && jupyter serverextension enable --py jupyterlab_git \
+ && jupyter labextension install \
+        @jupyterlab/mp4-extension \
+        @jupyterlab/google-drive \
+ && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+ && rm -rf ${HOME}/.cache/yarn \
+ && rm -rf ${HOME}/.node-gyp \
+ && conda clean -tipsy \
+ && npm cache clean --force 
+
+RUN conda install -y \
+        xtensor-python \
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/*
+
+RUN  jupyter labextension install \
+       @jupyterlab/git \
+ && conda clean -tipsy \
+ && npm cache clean --force \
+ && rm -rf ${CONDA_DIR}/pkgs/* 
+
 # Spark
 
 # ENV APACHE_SPARK_VERSION=2.3.1 \
@@ -395,23 +421,13 @@ ENV CLOUDSDK_ROOT_DIR=$GCLOUD_DIR \
 # RUN pip install -U --no-cache-dir pyspark \
 #  && pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
 
-RUN pip install -U --no-cache-dir jupyterlab-git \
- && jupyter serverextension enable --py jupyterlab_git \
- && jupyter labextension install \
-#       @jupyterlab/git \
-        @jupyterlab/mp4-extension \
-        @jupyterlab/google-drive \
- && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
- && rm -rf ${HOME}/.cache/yarn \
- && rm -rf ${HOME}/.node-gyp \
- && conda clean -tipsy \
- && npm cache clean --force 
+USER root
 
-RUN conda install -y \
-        xtensor-python \
- && conda clean -tipsy 
+ADD tini-${TINI_VERSION} /usr/bin/tini
+ADD jupyter_notebook_config.py /etc/jupyter/jupyter_notebook_config.py
+RUN chmod +x /usr/bin/tini \
+ && echo "jupyter ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/notebook \
+ && fix-permissions /etc/jupyter/
 
-RUN  jupyter labextension install \
-       @jupyterlab/git \
- && conda clean -tipsy \
- && npm cache clean --force 
+USER $NB_USER
+

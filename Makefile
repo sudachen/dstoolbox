@@ -1,4 +1,4 @@
-export REVISION := 1.23
+export REVISION := 1.24
 export BASE_REVISION := $(REVISION)
 export OWNER := sudachen
 
