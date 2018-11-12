@@ -93,30 +93,17 @@ RUN cargo install evcxr_jupyter \
 
 RUN sed ~/.local/share/jupyter/kernels/rust/kernel.json -i -e "s/_name\": \"Rust\"/_name\": \"Rust `rustc --version | cut -f 2 -d ' '`\"/g"    
 
-# Scala
+# Dask
 
-USER root
-
-ENV ALMOND_VERSION=0.1.9 \
-    SBT_VERSION=1.2.3 \
-    SCALA_VERSION=2.12.7 \
-    PATH=$PATH:/opt/sbt/bin
-
-RUN mkdir /opt/sbt \
- && curl -sL --retry 5 "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" | tar zx -C /opt/sbt --strip-components=1 \
- && chmod +x /opt/sbt/bin/sbt \
- && curl -L -o /usr/bin/coursier https://git.io/coursier \
- && chmod +x /usr/bin/coursier 
-
-USER $NB_USER
-
-RUN coursier bootstrap \
-      -i user -I user:sh.almond:scala-kernel-api_$SCALA_VERSION:$ALMOND_VERSION \
-      sh.almond:scala-kernel_$SCALA_VERSION:$ALMOND_VERSION \
-      -o almond_2_12 \
- && chmod +x almond_2_12 \
- && ./almond_2_12 --id almond_scala_2_12 --display-name "Scala 2.12" --install \
- && rm ./almond_2_12
+RUN conda install -y dask \
+ && jupyter labextension install \
+	dask-labextension \
+ && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+ && rm -rf ${HOME}/.cache/yarn \
+ && rm -rf ${HOME}/.node-gyp \
+ && conda clean -tipsy \
+ && npm cache clean --force \
+ && rm -rf ${CONDA_DIR}/pkgs/*
 
 # Spark
 
@@ -143,12 +130,36 @@ USER $NB_USER
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre 
 RUN curl -L https://github.com/sudachen/dstoolbox/releases/download/1.23/hadoop-2.8-jars.7z -o /tmp/hadoop-2.8-jars.7z \
  && cd /opt/spark \
- && 7z x /tmp/hadoop-2.8-jars.7z \
+ && 7z x -y /tmp/hadoop-2.8-jars.7z \
  && rm /tmp/hadoop-2.8-jars.7z
 
 RUN pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
 
-ENV CLASSPATH=/opt/spark/jars:$CLASSPATH
+# Scala
+
+USER root
+
+ENV ALMOND_VERSION=0.1.9 \
+    SBT_VERSION=1.2.3 \
+    SCALA_VERSION=2.12.7 \
+    PATH=$PATH:/opt/sbt/bin
+
+RUN mkdir /opt/sbt \
+ && curl -sL --retry 5 "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" | tar zx -C /opt/sbt --strip-components=1 \
+ && chmod +x /opt/sbt/bin/sbt \
+ && curl -L -o /usr/bin/coursier https://git.io/coursier \
+ && chmod +x /usr/bin/coursier 
+
+USER $NB_USER
+
+RUN coursier bootstrap \
+      -i user \
+      -I user:sh.almond:scala-kernel-api_$SCALA_VERSION:$ALMOND_VERSION \
+      sh.almond:scala-kernel_$SCALA_VERSION:$ALMOND_VERSION \
+      -o almond_2_12 \
+ && chmod +x almond_2_12 \
+ && ./almond_2_12 --id almond_scala_2_12 --display-name "Scala $SCALA_VERSION" --install \
+ && rm ./almond_2_12
 
 # C++
 #RUN conda create -n cling \
@@ -156,16 +167,3 @@ ENV CLASSPATH=/opt/spark/jars:$CLASSPATH
 # && conda clean -tipsy \
 # && rm -rf ${CONDA_DIR}/pkgs/* 
 #RUN cp -r $CONDA_DIR/env/cling/share/jupyter/kernels/xeus-cling-cpp17 $HOME/.local/share/jupyter/kernels
-
-# Dask
-
-RUN conda install -y dask \
- && jupyter labextension install \
-	dask-labextension \
- && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
- && rm -rf ${HOME}/.cache/yarn \
- && rm -rf ${HOME}/.node-gyp \
- && conda clean -tipsy \
- && npm cache clean --force \
- && rm -rf ${CONDA_DIR}/pkgs/*
-
