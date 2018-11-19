@@ -16,9 +16,11 @@ config:
 	   then if [ -f Dockerfile.user ]; then cp Dockerfile.user ${DSTOOLBOX_DOCKERUSER}; fi; fi
 	if [ ! -f ${DSTOOLBOX_NBCONFIG} ]; then cp jupyter_notebook_config.py ${DSTOOLBOX_NBCONFIG}; fi
 	if [ ! -f ${DSTOOLBOX_KSETUP} ]; then cp setup_kernel.py ${DSTOOLBOX_KSETUP}; fi
+	cp mysql.Dockerfile ${CONFIG_DIR}/
+	cp postgres.Dockerfile ${CONFIG_DIR}/
 	cp Dockerfile.in ${DSTOOLBOX_DOCKERFILE}.in
-	cp dst_up ${CONFIG_DIR}/up
-	cp dst_down ${CONFIG_DIR}/down
+	cp up ${CONFIG_DIR}/up
+	cp down ${CONFIG_DIR}/down
 
 up: config down
 	cd ${CONFIG_DIR}; ./up 
