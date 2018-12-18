@@ -1,9 +1,10 @@
 FROM debian:9-slim
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
-ENV FULLREBUILD 20181110
+ENV FULLREBUILD 20181217
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update --fix-missing \
+RUN sed -i /etc/apt/sources.list -e 's/stretch main/stretch main non-free/g' \ 
+ && apt-get update --fix-missing \
  && apt-get install -qy --no-install-recommends \
     ca-certificates \
     wget \
@@ -74,7 +75,8 @@ RUN mkdir ${HOME}/work \
  && conda config --system --append channels conda-forge \
  #&& conda config --system --prepend channels intel \
  && conda config --system --set show_channel_urls true \
- && conda install 'python=3.6.6' \
+ && echo "python ==3.6.6" >> ${CONDA_DIR}/conda-meta/pinned \
+ && conda install 'python==3.6.6' \
  && conda update --all -y \
  && conda clean -tipsy \
  && rm -rf ${HOME}/.cache/yarn \
@@ -83,7 +85,7 @@ RUN mkdir ${HOME}/work \
  #&& echo "conda activate base" >> ${HOME}/.bashrc 
 
 RUN conda install -y \
-       'numpy=1.14.6' \
+       'numpy>=1.15.4' \
        'xarray<=0.10.7' \
        'pandas' \
        'scipy' \
@@ -157,7 +159,7 @@ RUN pip install -U --no-cache-dir \
 ENV XDG_CACHE_HOME ${HOME}/.cache/
 RUN MPLBACKEND=Agg python -c "import matplotlib.pyplot" 
 
-# OpenCV
+# OpenCV3
 
 RUN conda install -y -c https://conda.anaconda.org/menpo opencv3 \        
  && conda clean -tipsy \
@@ -215,6 +217,7 @@ RUN bash -c "for i in {1..9}; do mkdir -p /usr/share/man/man\$i; done" \
         time \
  && apt-get clean 
 
+
 USER $NB_USER
 
 # JupyterLab
@@ -241,19 +244,6 @@ WORKDIR $HOME
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "jupyter", "lab" ]
 
-# NVIDIA/PyTorch
-
-LABEL com.nvidia.volumes.needed="nvidia_driver"
-LABEL com.nvidia.cuda.version="9.2"
-LABEL com.nvidia.cudnn.version="7.2"
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
-
-RUN conda install pytorch torchvision cuda92 -c pytorch \
- && conda clean -tipsy \
- && rm -rf ${CONDA_DIR}/pkgs/*
-
 USER root
 
 RUN  apt-get install -y --no-install-recommends \
@@ -270,59 +260,6 @@ RUN  apt-get install -y --no-install-recommends \
         ca-certificates-java \
 &&   apt-get clean
 
-#PyPy6 3.5
-
-USER root
-
-RUN mkdir /opt/pypy \
- && ln -s /opt/pypy/bin/pypy3 /usr/local/bin \
- && ln -s /opt/pypy/bin/pip /usr/local/bin/pipy3 \
- && chown -R $NB_USER /opt/pypy \
- && fix-permissions /opt/pypy/
-
-USER $NB_USER
-
-ENV PYPY_GC_MAX: 1.99GB
-ENV PYPY_GC_MAJOR_COLLECT: 1.2
-
-# RUN wget -O pypy.tar.bz2 https://bitbucket.org/squeaky/portable-pypy/downloads/pypy3.5-6.0.0-linux_x86_64-portable.tar.bz2 \
-# &&  tar -xjC /opt/pypy --strip-components=1 -f pypy.tar.bz2 \
-# &&  find /opt/pypy/lib-python -depth -type d -a \( -name test -o -name tests \) -exec rm -rf '{}' + \
-# &&  rm pypy.tar.bz2 
-
-# RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
-# &&  pypy3 get-pip.py \
-# 		--disable-pip-version-check \
-# 		--no-cache-dir \
-# &&  rm get-pip.py
-
-#RUN BLAS=/usr/lib/libopenblas.a LAPACK=/usr/lib/libopenblas.a \
-#    pipy3 install --no-cache-dir \
-#        requests selenium \
-#        pytest ipython jupyter \
-#         numpy matplotlib pandas Pillow \ 
-#         Cython scipy scikit-learn scikit-image \
-#         pydrive psycopg2 pymysql sqlalchemy \
-#         google-api-python-client oauth2client pexpect pyotp \
-#         scrapy ipywidgets sqlalchemy-redshift \
-#         pystan fbprophet 
-
-# RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
-
-# RUN pipy3 install -U --no-cache-dir \
-#         python-Levenshtein \
-#         git+git://github.com/sudachen/colabtools \
-#         git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
-#         git+git://github.com/sudachen/ipython-sql \
-#         git+git://github.com/sudachen/PyDrive 
-
-RUN curl -o /tmp/pypy.7z -L https://github.com/sudachen/dstoolbox/releases/download/1.23/pypy-3.5.7z \
- &&  cd / && 7z x /tmp/pypy.7z \
- &&  rm /tmp/pypy.7z 
-
-RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
-COPY logo-32x32.png logo-64x64.png $HOME/.local/share/jupyter/kernels/pypy6-3.5/
-
 # Other 
 
 USER $NB_USER    
@@ -331,8 +268,6 @@ RUN pip install -U --no-cache-dir \
         py4j \
         pythran \
         pybind11 \
-        pyopencl \
-        pyclblas \
         python-Levenshtein \
         pymc \
         pystan \
@@ -384,6 +319,7 @@ RUN pip install -U --no-cache-dir jupyterlab-git \
 
 RUN conda install -y \
         xtensor-python \
+        sklearn-contrib-lightning \
  && conda clean -tipsy \
  && rm -rf ${CONDA_DIR}/pkgs/*
 
@@ -395,31 +331,54 @@ RUN  jupyter labextension install \
 
 # Spark
 
-# ENV APACHE_SPARK_VERSION=2.3.1 \
-#     HADOOP_VERSION=2.7 \
-#     SPARK_HOME=/opt/spark \
-#     PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.6-src.zip \
-#     SPARK_XMX=2048M
+ENV SPARK_HOME=/opt/spark \
+    PYTHONPATH="/opt/spark/python:$PYTHONPATH" \
+    SPARK_XMX=2048M
 
-# ENV SPARK_OPTS=\
-#         --driver-java-options=-Xms1024M \
-#         --driver-java-options=-Xmx$SPARK_XMX \
-#         --driver-java-options=-Dlog4j.logLevel=info
+ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx$SPARK_XMX --driver-java-options=-Dlog4j.logLevel=info"
 
-# USER root
+USER root
 
-# RUN cd /tmp \
-#  && mkdir ${SPARK_HOME} \
-#  && wget http://apache.claz.org/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-#  && tar xzf spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz -C ${SPARK_HOME} --strip-components=1 \
-#  && rm spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-#  && chown $NB_USER ${SPARK_HOME} \
-#  && fix-permissions ${SPARK_HOME}
+RUN mkdir ${SPARK_HOME} \
+ && curl -L http://apache.claz.org/spark/spark-2.4.0/spark-2.4.0-bin-without-hadoop-scala-2.12.tgz -o /tmp/spark.tgz \
+ && tar xzf /tmp/spark.tgz -C ${SPARK_HOME} --strip-components=1 \
+ && rm /tmp/spark.tgz \
+ && chown $NB_USER ${SPARK_HOME} \
+ && fix-permissions ${SPARK_HOME}
 
-# USER $NB_USER  
+USER $NB_USER  
 
-# RUN pip install -U --no-cache-dir pyspark \
-#  && pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre 
+RUN curl -L https://github.com/sudachen/dstoolbox/releases/download/1.23/hadoop-2.8-jars.7z -o /tmp/hadoop-2.8-jars.7z \
+ && cd /opt/spark \
+ && 7z x -y /tmp/hadoop-2.8-jars.7z \
+ && rm /tmp/hadoop-2.8-jars.7z
+
+RUN pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
+
+# Dask
+
+RUN conda install -y dask \
+ && jupyter labextension install \
+        dask-labextension \
+ && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
+ && rm -rf ${HOME}/.cache/yarn \
+ && rm -rf ${HOME}/.node-gyp \
+ && conda clean -tipsy \
+ && npm cache clean --force \
+ && rm -rf ${CONDA_DIR}/pkgs/*
+
+USER $NB_USER
+
+RUN pip install -U --no-cache-dir \
+	 mmh3 \
+	 spacy \
+	 hug \
+	 falcon \
+ && python -m spacy download en \
+ && python -m spacy download es	
+
+# -#-
 
 USER root
 
@@ -431,3 +390,4 @@ RUN chmod +x /usr/bin/tini \
 
 USER $NB_USER
 
+ 

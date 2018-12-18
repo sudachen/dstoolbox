@@ -1,14 +1,44 @@
 FROM sudachen/jupyter:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
+# NVIDIA/Keras/Theano/PyTorch/OpenCL
+
+LABEL com.nvidia.volumes.needed="nvidia_driver"
+LABEL com.nvidia.cuda.version="9.2"
+LABEL com.nvidia.cudnn.version="7.4"
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=9.2"
+
+USER $NB_USER
+
+#RUN conda install -y pytorch torchvision -c pytorch \
+# && conda clean -tipsy \
+# && rm -rf ${CONDA_DIR}/pkgs/*
+
+RUN conda install -y tensorflow-gpu keras Theano \
+ && conda clean -tipsy \
+ && rm -rf ${CONDA_DIR}/pkgs/*
+
 USER root
 
-RUN apt-get install -y --no-install-recommends \
+RUN mkdir /tmp/ncl && cd /tmp/ncl \
+ && apt-get download  nvidia-opencl-common nvidia-opencl-icd \
+ && dpkg -i --ignore-depends=libnvidia-ptxjitcompiler1,libcuda1,libnvidia-compiler,libnvidia-fatbinaryloader,nvidia-legacy-check,nvidia-support,nvidia-alternative *.deb \
+ && rm *.deb \
+ && apt-get --fix-broken install -y \
+ && apt-get install -y --no-install-recommends \
         libzmq3-dev libssl-dev screen \
  && apt-get clean
 
 USER $NB_USER
 
+RUN pip install -U --no-cache-dir \
+        pyopencl \
+        pyclblas \
+        torch \
+        torchvision
+        
 # Julia
 
 ENV JULIA_BASE=/opt/julia \
@@ -93,48 +123,6 @@ RUN cargo install evcxr_jupyter \
 
 RUN sed ~/.local/share/jupyter/kernels/rust/kernel.json -i -e "s/_name\": \"Rust\"/_name\": \"Rust `rustc --version | cut -f 2 -d ' '`\"/g"    
 
-# Dask
-
-RUN conda install -y dask \
- && jupyter labextension install \
-	dask-labextension \
- && rm -rf ${CONDA_DIR}/share/jupyter/lab/staging \
- && rm -rf ${HOME}/.cache/yarn \
- && rm -rf ${HOME}/.node-gyp \
- && conda clean -tipsy \
- && npm cache clean --force \
- && rm -rf ${CONDA_DIR}/pkgs/*
-
-# Spark
-
-ENV SPARK_HOME=/opt/spark \
-    PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.6-src.zip \
-    SPARK_XMX=2048M
-
-ENV SPARK_OPTS=\
-        --driver-java-options=-Xms1024M \
-        --driver-java-options=-Xmx$SPARK_XMX \
-        --driver-java-options=-Dlog4j.logLevel=info
-
-USER root
-
-RUN mkdir ${SPARK_HOME} \
- && curl -L http://apache.claz.org/spark/spark-2.4.0/spark-2.4.0-bin-without-hadoop-scala-2.12.tgz -o /tmp/spark.tgz \
- && tar xzf /tmp/spark.tgz -C ${SPARK_HOME} --strip-components=1 \
- && rm /tmp/spark.tgz \
- && chown $NB_USER ${SPARK_HOME} \
- && fix-permissions ${SPARK_HOME}
-
-USER $NB_USER  
-
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre 
-RUN curl -L https://github.com/sudachen/dstoolbox/releases/download/1.23/hadoop-2.8-jars.7z -o /tmp/hadoop-2.8-jars.7z \
- && cd /opt/spark \
- && 7z x -y /tmp/hadoop-2.8-jars.7z \
- && rm /tmp/hadoop-2.8-jars.7z
-
-RUN pip install -U --no-cache-dir git+git://github.com/sudachen/spark-sklearn#egg=spark_sklearn\&subdirectory=python 
-
 # Scala
 
 USER root
@@ -167,3 +155,60 @@ RUN coursier bootstrap \
 # && conda clean -tipsy \
 # && rm -rf ${CONDA_DIR}/pkgs/* 
 #RUN cp -r $CONDA_DIR/env/cling/share/jupyter/kernels/xeus-cling-cpp17 $HOME/.local/share/jupyter/kernels
+
+#PyPy6 3.5
+
+USER root
+
+RUN mkdir /opt/pypy \
+ && ln -s /opt/pypy/bin/pypy3 /usr/local/bin \
+ && ln -s /opt/pypy/bin/pip /usr/local/bin/pipy3 \
+ && chown -R $NB_USER /opt/pypy \
+ && fix-permissions /opt/pypy/
+
+USER $NB_USER
+
+ENV PYPY_GC_MAX: 1.99GB
+ENV PYPY_GC_MAJOR_COLLECT: 1.2
+
+# RUN wget -O pypy.tar.bz2 https://bitbucket.org/squeaky/portable-pypy/downloads/pypy3.5-6.0.0-linux_x86_64-portable.tar.bz2 \
+# &&  tar -xjC /opt/pypy --strip-components=1 -f pypy.tar.bz2 \
+# &&  find /opt/pypy/lib-python -depth -type d -a \( -name test -o -name tests \) -exec rm -rf '{}' + \
+# &&  rm pypy.tar.bz2 
+
+# RUN wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
+# &&  pypy3 get-pip.py \
+# 		--disable-pip-version-check \
+# 		--no-cache-dir \
+# &&  rm get-pip.py
+
+#RUN BLAS=/usr/lib/libopenblas.a LAPACK=/usr/lib/libopenblas.a \
+#    pipy3 install --no-cache-dir \
+#        requests selenium \
+#        pytest ipython jupyter \
+#         numpy matplotlib pandas Pillow \ 
+#         Cython scipy scikit-learn scikit-image \
+#         pydrive psycopg2 pymysql sqlalchemy \
+#         google-api-python-client oauth2client pexpect pyotp \
+#         scrapy ipywidgets sqlalchemy-redshift \
+#         pystan fbprophet 
+
+# RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
+
+# RUN pipy3 install -U --no-cache-dir \
+#         python-Levenshtein \
+#         git+git://github.com/sudachen/colabtools \
+#         git+https://github.com/sudachen/pygdrive-funcs.git#egg=gdrive \ 
+#         git+git://github.com/sudachen/ipython-sql \
+#         git+git://github.com/sudachen/PyDrive 
+
+RUN curl -o /tmp/pypy.7z -L https://github.com/sudachen/dstoolbox/releases/download/1.23/pypy-3.5.7z \
+ &&  cd / && 7z x /tmp/pypy.7z \
+ &&  rm /tmp/pypy.7z 
+
+RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
+COPY logo-32x32.png logo-64x64.png $HOME/.local/share/jupyter/kernels/pypy6-3.5/
+
+# -#-
+
+USER $NB_USER

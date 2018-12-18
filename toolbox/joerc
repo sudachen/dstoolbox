@@ -6,12 +6,16 @@
 
 :main
 undo ^U
+undo ^Z
 redo ^R
 save ^S
 exsave ^X
 blkcpy ^V
 blksave ^W
 ffirst ^F
-nbuf ^/
+nbuf .k6
+pbuf .k5
+open .k3
+save .k2
 
  
