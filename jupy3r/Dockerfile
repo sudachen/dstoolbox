@@ -209,6 +209,14 @@ RUN curl -o /tmp/pypy.7z -L https://github.com/sudachen/dstoolbox/releases/downl
 RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
 COPY logo-32x32.png logo-64x64.png $HOME/.local/share/jupyter/kernels/pypy6-3.5/
 
+# Kotlin
+
+RUN curl -L -o /tmp/kotlin-jupyter.zip https://github.com/ligee/kotlin-jupyter/archive/master.zip  \
+ && cd /tmp \
+ && unzip kotlin-jupyter \
+ && cd kotlin-jupyter-master && ./gradlew install && cd .. \
+ && rm -rf kotlin-jupyter*
+
 # -#-
 
 USER $NB_USER
