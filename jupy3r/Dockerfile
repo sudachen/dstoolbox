@@ -1,6 +1,28 @@
 FROM sudachen/jupyter:latest
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
+# Intel OpenCL
+
+USER root 
+
+#RUN add-apt-repository ppa:ocl-dev/intel-opencl \
+#  && apt-get install intel-opencl   
+
+RUN wget https://github.com/sudachen/dstoolbox/releases/download/1.23/intel-cpu-ocl.7z -q -O /tmp/intel-cpu-ocl.7z --no-check-certificate \
+  && cd /tmp \
+  && 7z x intel-cpu-ocl.7z \
+  && cd intel-cpu-ocl \
+  && ls -l \
+  && dpkg -i *.deb \
+  && cd .. \
+  && rm -r intel-cpu-ocl* \
+  && echo "/opt/intel/opencl-1.2-6.4.0.25/lib64/libintelocl.so" > /etc/OpenCL/vendors/intel-cpu.icd
+
+# Let the system know where to find the OpenCL library at runtime
+#ENV OCL_INC /opt/intel/opencl/include
+#ENV OCL_LIB /opt/intel/opencl-1.2-6.4.0.25/lib64
+#ENV LD_LIBRARY_PATH $OCL_LIB:$LD_LIBRARY_PATH
+
 # NVIDIA/Keras/Theano/PyTorch/OpenCL
 
 LABEL com.nvidia.volumes.needed="nvidia_driver"
@@ -22,10 +44,9 @@ RUN conda install -y tensorflow-gpu keras Theano \
 
 USER root
 
-RUN mkdir /tmp/ncl && cd /tmp/ncl \
- && apt-get download  nvidia-opencl-common nvidia-opencl-icd \
- && dpkg -i --ignore-depends=libnvidia-ptxjitcompiler1,libcuda1,libnvidia-compiler,libnvidia-fatbinaryloader,nvidia-legacy-check,nvidia-support,nvidia-alternative *.deb \
- && rm *.deb \
+RUN apt-get install  -y software-properties-common \
+ && add-apt-repository -y ppa:graphics-drivers/ppa \
+ && apt-get install -y libnvidia-compute-390 \
  && apt-get --fix-broken install -y \
  && apt-get install -y --no-install-recommends \
         libzmq3-dev libssl-dev screen \
@@ -43,7 +64,7 @@ RUN pip install -U --no-cache-dir \
 
 ENV JULIA_BASE=/opt/julia \
     JULIA_STARTUP=/opt/julia/etc/julia/startup.jl \
-    JULIA_VERSION=1.0.2 
+    JULIA_VERSION=1.0.3 
 
 USER root
 
@@ -206,17 +227,45 @@ RUN curl -o /tmp/pypy.7z -L https://github.com/sudachen/dstoolbox/releases/downl
  &&  cd / && 7z x /tmp/pypy.7z \
  &&  rm /tmp/pypy.7z 
 
-RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 3"
+RUN pypy3 -m ipykernel install --user --name "PyPy6-3.5" --display-name "PyPy 6/3.5"
 COPY logo-32x32.png logo-64x64.png $HOME/.local/share/jupyter/kernels/pypy6-3.5/
 
-# Kotlin
+# Kotlin/Java
 
-RUN curl -L -o /tmp/kotlin-jupyter.zip https://github.com/ligee/kotlin-jupyter/archive/master.zip  \
- && cd /tmp \
- && unzip kotlin-jupyter \
- && cd kotlin-jupyter-master && ./gradlew install && cd .. \
- && rm -rf kotlin-jupyter*
+USER root
 
+RUN apt install -y \
+         openjdk-8-jdk-headless \
+         maven 
+         
+USER $NB_USER
+ENV GRADLE_OPTS="-Dorg.gradle.daemon=false"
+
+RUN curl -L -o /tmp/kotlin.7z https://github.com/sudachen/dstoolbox/releases/download/1.23/kotlin-1.3.11.7z \
+ && cd $HOME/.local/share/jupyter/kernels \
+ && 7z x /tmp/kotlin.7z \
+ && rm /tmp/kotlin.7z \
+ && sed -e 's:"Kotlin":"Kotlin 1.3.11":g' -i ~/.local/share/jupyter/kernels/kotlin/kernel.json \
+ && mkdir -p $ $HOME/jars
+
+#RUN curl -L -o /tmp/java.7z https://github.com/sudachen/dstoolbox/releases/download/1.23/java.7z \
+
+COPY java.7z /tmp/java.7z
+RUN true \
+ && cd $HOME/.local/share/jupyter/kernels \
+ && 7z x /tmp/java.7z \
+# && rm /tmp/java.7z \
+ && sed -e 's:"Java":"Java 8":g' -i ~/.local/share/jupyter/kernels/java/kernel.json \
+ && mkdir -p $ $HOME/jars
+
+
+RUN sed -e 's;\${PATH};"/home/jupyter/.local/share/jupyter/kernels/kotlin/lib/*:/home/jupyter/jars/*:/home/jupyter/.local/share/jars/*", "-Xmx2048m", "-Xms256m";g' -i ~/.local/share/jupyter/kernels/kotlin/kernel.json
+RUN sed -e 's;\${PATH};"/home/jupyter/.local/share/jupyter/kernels/java/lib/*:/home/jupyter/jars/*:/home/jupyter/.local/share/jars/*", "-Xmx2048m", "-Xms256m";g' -i ~/.local/share/jupyter/kernels/java/kernel.json
+
+# Java
+
+
+ 
 # -#-
 
 USER $NB_USER

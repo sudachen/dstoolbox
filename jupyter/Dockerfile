@@ -1,7 +1,7 @@
-FROM debian:9-slim
+FROM ubuntu:18.04
 LABEL maintainer="Alexey Sudachen <alexey@sudachen.name>"
 
-ENV FULLREBUILD 20181217
+ENV FULLREBUILD 20190610
 ENV DEBIAN_FRONTEND noninteractive
 RUN sed -i /etc/apt/sources.list -e 's/stretch main/stretch main non-free/g' \ 
  && apt-get update --fix-missing \
@@ -40,7 +40,8 @@ RUN sed -i /etc/apt/sources.list -e 's/stretch main/stretch main non-free/g' \
     libfreetype6-dev \
     curl \
     && rm -rf /var/lib/apt/lists/* \
- && localedef -i en_US -c -f UTF-8 en_US.UTF-8
+ && locale-gen en_US.UTF-8 \
+ && update-locale LANG=en_US.UTF-8
 
 ENV CONDA_VERSION=4.5.11 \
     TINI_VERSION=0.16.1 \
@@ -222,7 +223,7 @@ USER $NB_USER
 
 # JupyterLab
 
-RUN pip install -U --no-cache-dir 'jupyterlab>=0.35.*' \
+RUN pip install -U --no-cache-dir 'jupyterlab>=0.35,<1.0' \
  && jupyter nbextension enable --py widgetsnbextension --sys-prefix \
  && jupyter labextension install \
         @jupyter-widgets/jupyterlab-manager@^0.38 \
@@ -340,7 +341,7 @@ ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx$SPARK
 USER root
 
 RUN mkdir ${SPARK_HOME} \
- && curl -L http://apache.claz.org/spark/spark-2.4.0/spark-2.4.0-bin-without-hadoop-scala-2.12.tgz -o /tmp/spark.tgz \
+ && curl -L https://archive.apache.org/dist/spark/spark-2.4.3/spark-2.4.3-bin-without-hadoop-scala-2.12.tgz -o /tmp/spark.tgz \
  && tar xzf /tmp/spark.tgz -C ${SPARK_HOME} --strip-components=1 \
  && rm /tmp/spark.tgz \
  && chown $NB_USER ${SPARK_HOME} \
